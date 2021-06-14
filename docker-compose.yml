@@ -1,0 +1,11 @@
+services:
+
+  kafka:
+    image: wurstmeister/kafka:latest
+
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_CREATE_TOPICS: "Events:10:1"
+      KAFKA_ADVERTISED_HOST_NAME: localhost
+      ZOOKEEPER_CONNECT: zookeeper:2181
+  docker run   --net=host   --rm   confluentinc/cp-kafka:4.0.0   kafka-topics --create --topic events --partitions 10 --replication-factor 1 --if-not-exists --zookeeper  localhost:22181
