@@ -1,2 +1,2 @@
 # amba-analysis-streams
-Stream Processing Analysis for Twitter and CrossRef
+Generic Stream Processing Framework for processing of Events related to scientific literature entities.
