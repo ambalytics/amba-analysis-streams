@@ -1,11 +1,39 @@
+---
+#name: amba-analysis-stream
+
+#networks:
+#  events_kafka:
+#    name: events_kafka
+
 services:
+  zookeeper:
+    image: wurstmeister/zookeeper
+    ports:
+      - "2181:2181"
 
   kafka:
     image: wurstmeister/kafka:latest
-
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
     environment:
       KAFKA_BROKER_ID: 1
-      KAFKA_CREATE_TOPICS: "Events:10:1"
-      KAFKA_ADVERTISED_HOST_NAME: localhost
-      ZOOKEEPER_CONNECT: zookeeper:2181
-  docker run   --net=host   --rm   confluentinc/cp-kafka:4.0.0   kafka-topics --create --topic events --partitions 10 --replication-factor 1 --if-not-exists --zookeeper  localhost:22181
+      KAFKA_CREATE_TOPICS: "tweets:10:1,links:3:1"
+      KAFKA_ADVERTISED_HOST_NAME: kafka
+      KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
+
+  connector_twitter:
+    image: twitter-connector
+    container_name: connect-twitter
+    depends_on:
+      - zookeeper
+      - kafka
+
+  worker_twitter:
+    image: twitter-worker
+    container_name: worker-twitter
+    depends_on:
+      - zookeeper
+      - kafka
+      - connector_twitter
