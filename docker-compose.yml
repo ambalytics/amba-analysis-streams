@@ -22,18 +22,21 @@ services:
       KAFKA_CREATE_TOPICS: "tweets:10:1,links:3:1"
       KAFKA_ADVERTISED_HOST_NAME: kafka
       KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
+      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://kafka:9092"
 
   connector_twitter:
     image: twitter-connector
     container_name: connect-twitter
     depends_on:
-      - zookeeper
       - kafka
 
   worker_twitter:
     image: twitter-worker
     container_name: worker-twitter
     depends_on:
-      - zookeeper
-      - kafka
       - connector_twitter
+
+# https://docs.docker.com/compose/compose-file/compose-file-v3/#healthcheck
+# for better waiting
+
+# topicname:partition:replica
