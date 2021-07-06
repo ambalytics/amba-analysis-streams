@@ -8,20 +8,29 @@
 services:
   zookeeper:
     image: wurstmeister/zookeeper
+    container_name: zookeeper
+#    restart: unless-stopped
+    hostname: zookeeper
     ports:
       - "2181:2181"
 
+
   kafka:
     image: wurstmeister/kafka:latest
+    container_name: kafka
     depends_on:
       - zookeeper
     ports:
       - "9092:9092"
+    hostname: kafka
+    links:
+      - zookeeper
     environment:
       KAFKA_BROKER_ID: 1
-      KAFKA_CREATE_TOPICS: "tweets:10:1,links:3:1"
-      KAFKA_ADVERTISED_HOST_NAME: kafka
+      KAFKA_CREATE_TOPICS: "events_raw:1:1,events_raw-discussed:3:1,events_raw-crossref:3:1,events_linked:1:1,events_linked-discussed:3:1,events_unknown:3:1,events_processed:1:1,events_processed-discussed:3:1,events_aggregated:1:1"
+      KAFKA_ADVERTISED_HOST_NAME: "kafka"
       KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
+      KAFKA_ADVERTISED_PORT: "9092"
       KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://kafka:9092"
 
   connector_twitter:
@@ -29,6 +38,8 @@ services:
     container_name: connect-twitter
     depends_on:
       - kafka
+#    networks:
+#      - default
 
   worker_twitter:
     image: twitter-worker
@@ -36,7 +47,33 @@ services:
     depends_on:
       - connector_twitter
 
+
+
 # https://docs.docker.com/compose/compose-file/compose-file-v3/#healthcheck
 # for better waiting
-
+#
 # topicname:partition:replica
+# "events_raw:1:1, events_raw-discussed:3:1, events_raw-crossref:3:1, events_linked:1:1, events_linked-discussed:3:1, events_unknown:3:1, events_processed:1:1, events_processed-discussed:3:1, events_aggregated:1:1"
+
+# events_raw:1:1
+# events_raw-discussed:3:1
+# events_raw-crossref:3:1
+# events_linked:1:1
+# events_linked-discussed:3:1
+# events_unknown:3:1
+# events_processed:1:1
+# events_processed-discussed:3:1
+# events_aggregated:1:1
+
+#  'raw': {
+#            'own_topic': ['discussed', 'crossref']
+#        },
+#        'linked': {
+#            'own_topic': ['discussed']
+#        },
+#        'unknown': {
+#        },
+#        'processed': {
+#            'own_topic': ['discussed']
+#        },
+#        'aggregated': {
