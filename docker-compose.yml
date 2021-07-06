@@ -27,7 +27,7 @@ services:
       - zookeeper
     environment:
       KAFKA_BROKER_ID: 1
-      KAFKA_CREATE_TOPICS: "events_raw:1:1,events_raw-discussed:3:1,events_raw-crossref:3:1,events_linked:1:1,events_linked-discussed:3:1,events_unknown:3:1,events_processed:1:1,events_processed-discussed:3:1,events_aggregated:1:1"
+      KAFKA_CREATE_TOPICS: "events_raw:1:1,events_raw-discusses:3:1,events_raw-crossref:3:1,events_linked:1:1,events_linked-discusses:3:1,events_unknown:3:1,events_processed:1:1,events_processed-discusses:3:1,events_aggregated:1:1"
       KAFKA_ADVERTISED_HOST_NAME: "kafka"
       KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
       KAFKA_ADVERTISED_PORT: "9092"
@@ -41,12 +41,17 @@ services:
 #    networks:
 #      - default
 
-  worker_twitter:
-    image: twitter-worker
-    container_name: worker-twitter
+  perculator:
+    image: twitter-perculator
+    container_name: twitter-perculator
     depends_on:
       - connector_twitter
 
+  worker_twitter:
+    image: twitter-worker
+    container_name: twitter-worker
+    depends_on:
+      - connector_twitter
 
 
 # https://docs.docker.com/compose/compose-file/compose-file-v3/#healthcheck
