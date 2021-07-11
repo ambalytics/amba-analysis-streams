@@ -33,9 +33,17 @@ services:
       KAFKA_ADVERTISED_PORT: "9092"
       KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://kafka:9092"
 
+  mongo_db:
+    image: mongo
+    container_name: mongo-db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+
+
   connector_twitter:
     image: twitter-connector
-    container_name: connect-twitter
+    container_name: twitter-connector
     depends_on:
       - kafka
 #    networks:
@@ -52,6 +60,14 @@ services:
     container_name: twitter-worker
     depends_on:
       - connector_twitter
+      -
+  connector_mongodb:
+    image: mongodb-connector
+    container_name: mongodb-connector
+    depends_on:
+      - mongo_db
+    ports:
+      - 8081:8081
 
 
 # https://docs.docker.com/compose/compose-file/compose-file-v3/#healthcheck
