@@ -11,8 +11,8 @@ services:
     container_name: zookeeper
     #    restart: unless-stopped
     hostname: zookeeper
-    ports:
-      - "2181:2181"
+#    ports:
+#      - "2181:2181"
     networks:
       - backend
 
@@ -22,14 +22,14 @@ services:
     container_name: kafka
     depends_on:
       - zookeeper
-    ports:
-      - "9092:9092"
+#    ports:
+#      - "9092:9092"
     hostname: kafka
     links:
       - zookeeper
     environment:
       KAFKA_BROKER_ID: 1
-      KAFKA_CREATE_TOPICS: "events_raw:1:1,events_raw-discusses:3:1,events_raw-crossref:3:1,events_linked:1:1,events_linked-discusses:3:1,events_unknown:3:1,events_processed:1:1,events_processed-discusses:3:1,events_aggregated:1:1"
+      KAFKA_CREATE_TOPICS: "events_unlinked:1:1,events_unlinked-discusses:3:1,events_unlinked-crossref:3:1,events_linked:1:1,events_linked-discusses:3:1,events_unknown:3:1,events_processed:1:1,events_processed-discusses:3:1,events_aggregated:1:1"
       KAFKA_ADVERTISED_HOST_NAME: "kafka"
       KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
       KAFKA_ADVERTISED_PORT: "9092"
@@ -44,13 +44,15 @@ services:
     ports:
       - "27017:27017"
     environment:
-#      MONGO_INITDB_ROOT_USERNAME: root
-#      MONGO_INITDB_ROOT_PASSWORD: example
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
       MONGO_INITDB_DATABASE: events
     networks:
       - backend
 
-
+#    volumes:
+#        - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+# create this file temporary during github workflow
 
   connector_twitter:
     image: twitter-connector
@@ -84,16 +86,38 @@ services:
     networks:
       - backend
 
+  worker_pubfinder:
+    image: pubfinder-worker
+    container_name: pubfinder-worker
+    depends_on:
+      - kafka
+    networks:
+      - backend
+
+  api:
+    image: api
+    container_name: api
+    ports:
+      - "8080:80"
+    depends_on:
+      - kafka
+    networks:
+      - backend
+
+networks:
+  backend:
+    driver: bridge
+
 
 # https://docs.docker.com/compose/compose-file/compose-file-v3/#healthcheck
 # for better waiting
 #
 # topicname:partition:replica
-# "events_raw:1:1, events_raw-discussed:3:1, events_raw-crossref:3:1, events_linked:1:1, events_linked-discussed:3:1, events_unknown:3:1, events_processed:1:1, events_processed-discussed:3:1, events_aggregated:1:1"
+# "events_unlinked:1:1, events_unlinked-discussed:3:1, events_unlinked-crossref:3:1, events_linked:1:1, events_linked-discussed:3:1, events_unknown:3:1, events_processed:1:1, events_processed-discussed:3:1, events_aggregated:1:1"
 
-# events_raw:1:1
-# events_raw-discussed:3:1
-# events_raw-crossref:3:1
+# events_unlinked:1:1
+# events_unlinked-discussed:3:1
+# events_unlinked-crossref:3:1
 # events_linked:1:1
 # events_linked-discussed:3:1
 # events_unknown:3:1
@@ -101,7 +125,7 @@ services:
 # events_processed-discussed:3:1
 # events_aggregated:1:1
 
-#  'raw': {
+#  'unlinked': {
 #            'own_topic': ['discussed', 'crossref']
 #        },
 #        'linked': {
@@ -114,7 +138,3 @@ services:
 #        },
 #        'aggregated': {
 
-
-networks:
-  backend:
-    driver: bridge
