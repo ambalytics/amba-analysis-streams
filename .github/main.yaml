@@ -1,0 +1,19 @@
+name: Main Branch - Packaging
+
+on:
+  push:
+    branches:
+      - 'main'
+
+jobs:
+  package:
+    name: Docker Packaging
+    runs-on: ubuntu-18.04
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+      - name: Build Docker image
+
+          run: docker build -f Dockerfile . -t docker.pkg.github.com/ambalytics/${{ github.event.repository.name }}/${{ github.event.repository.name }}
