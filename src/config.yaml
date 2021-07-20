@@ -60,3 +60,16 @@ mongo_db:
     username: mongo_db_connector
     MONGO_INITDB_ROOT_PASSWORD: example
     MONGO_INITDB_DATABASE: events
+
+# add level to every application
+  # level * 10s wait before startup -> ensure services are started
+
+    # mongo db
+    # kafka
+    # zookeeper
+
+  # default = 1
+  # perculator = 2, uses api at level 1 (which uses mongo at level 0)
+  # these are needed services, most uses kafka at level 0
+
+startup_level:
