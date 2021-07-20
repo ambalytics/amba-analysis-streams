@@ -56,7 +56,7 @@ services:
 # create this file temporary during github workflow
 
   connector_twitter:
-    image: twitter-connector
+    image: docker.pkg.github.com/ambalytics/amba-analysis-worker-discussion/amba-analysis-worker-discussion:latest
     container_name: twitter-connector
     depends_on:
       - kafka
