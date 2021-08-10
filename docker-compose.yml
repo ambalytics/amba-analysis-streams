@@ -30,7 +30,7 @@ services:
       - zookeeper
     environment:
       KAFKA_BROKER_ID: 1
-      KAFKA_CREATE_TOPICS: "events_unlinked:1:1,events_unlinked-discusses:3:1,events_unlinked-crossref:3:1,events_linked:1:1,events_linked-discusses:3:1,events_unknown:3:1,events_processed:1:1,events_processed-discusses:3:1,events_aggregated:1:1"
+      KAFKA_CREATE_TOPICS: "events_unlinked:1:1,events_unlinked-discusses:4:1,events_unlinked-crossref:4:1,events_linked:1:1,events_linked-discusses:3:1,events_unknown:4:1,events_processed:1:1,events_processed-discusses:4:1,events_aggregated:1:1"
       KAFKA_ADVERTISED_HOST_NAME: "kafka"
       KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
       KAFKA_ADVERTISED_PORT: "9092"
@@ -68,6 +68,7 @@ services:
     container_name: twitter-perculator
     depends_on:
       - connector_twitter
+      - mongo_db
     networks:
       - backend
 
@@ -92,6 +93,7 @@ services:
     container_name: pubfinder-worker
     depends_on:
       - kafka
+      - mongo_db
     networks:
       - backend
 
@@ -102,6 +104,7 @@ services:
       - "8080:80"
     depends_on:
       - kafka
+      - mongo_db
     networks:
       - backend
 
