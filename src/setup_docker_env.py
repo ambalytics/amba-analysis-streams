@@ -1,7 +1,7 @@
 from ruamel import yaml
 
 configFile = 'config.yaml'
-
+# this is supposed to make easier yaml for configuration, not in use yes
 
 def load():
     with open(configFile) as fp:

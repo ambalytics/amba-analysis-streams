@@ -1,19 +1,11 @@
 ---
 #name: amba-analysis-stream
 
-#networks:
-#  events_kafka:
-#    name: events_kafka
-
-
 services:
   zookeeper:
     image: wurstmeister/zookeeper
     container_name: zookeeper
-    #    restart: unless-stopped
     hostname: zookeeper
-#    ports:
-#      - "2181:2181"
     networks:
       - backend
 
@@ -23,14 +15,12 @@ services:
     container_name: kafka
     depends_on:
       - zookeeper
-#    ports:
-#      - "9092:9092"
     hostname: kafka
     links:
       - zookeeper
     environment:
       KAFKA_BROKER_ID: 1
-      KAFKA_CREATE_TOPICS: "events_unlinked:1:1,events_unlinked-discusses:3:1,events_unlinked-crossref:3:1,events_linked:1:1,events_linked-discusses:3:1,events_unknown:3:1,events_processed:1:1,events_processed-discusses:3:1,events_aggregated:1:1"
+      KAFKA_CREATE_TOPICS: "events_unlinked:1:1,events_unlinked-discusses:3:1,events_unlinked-crossref:3:1,events_linked:1:1,events_linked-discusses:3:1,events_unknown:3:1,events_processed:1:1,events_processed-discusses:3:1,events_aggregated:3:1"
       KAFKA_ADVERTISED_HOST_NAME: "kafka"
       KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
       KAFKA_ADVERTISED_PORT: "9092"
@@ -66,6 +56,7 @@ services:
   perculator:
     image: twitter-perculator
     container_name: twitter-perculator
+    mem_limit: 500m
     depends_on:
       - connector_twitter
     networks:
@@ -87,9 +78,18 @@ services:
     networks:
       - backend
 
-  worker_pubfinder:
-    image: pubfinder-worker
+  worker_pubfinder: # --build for restart
+    image: pubfinder-worker # -t for building
     container_name: pubfinder-worker
+    mem_limit: 1g
+    depends_on:
+      - kafka
+    networks:
+      - backend
+
+  aggregator:
+    image: aggregator
+    container_name: aggregator
     depends_on:
       - kafka
     networks:
@@ -112,30 +112,7 @@ networks:
 
 # https://docs.docker.com/compose/compose-file/compose-file-v3/#healthcheck
 # for better waiting
+# processed <-> aggregated need same amount of partitions for faust to work
 #
 # topicname:partition:replica
 # "events_unlinked:1:1, events_unlinked-discussed:3:1, events_unlinked-crossref:3:1, events_linked:1:1, events_linked-discussed:3:1, events_unknown:3:1, events_processed:1:1, events_processed-discussed:3:1, events_aggregated:1:1"
-
-# events_unlinked:1:1
-# events_unlinked-discussed:3:1
-# events_unlinked-crossref:3:1
-# events_linked:1:1
-# events_linked-discussed:3:1
-# events_unknown:3:1
-# events_processed:1:1
-# events_processed-discussed:3:1
-# events_aggregated:1:1
-
-#  'unlinked': {
-#            'own_topic': ['discussed', 'crossref']
-#        },
-#        'linked': {
-#            'own_topic': ['discussed']
-#        },
-#        'unknown': {
-#        },
-#        'processed': {
-#            'own_topic': ['discussed']
-#        },
-#        'aggregated': {
-

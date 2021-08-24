@@ -4,7 +4,7 @@ topics:
     p: 1
     r: 1
     discusses:
-      p: 1
+      p: 3
       r: 1
     crossref:
       p: 1
@@ -14,7 +14,7 @@ topics:
     p: 1
     r: 1
     discusses:
-      p: 1
+      p: 3
       r: 1
 
   unknown:
@@ -25,11 +25,11 @@ topics:
     p: 1
     r: 1
     discusses:
-      p: 1
+      p: 3
       r: 1
 
   aggregated:
-    p: 1
+    p: 3
     r: 1
 
 
@@ -72,4 +72,4 @@ mongo_db:
   # perculator = 2, uses api at level 1 (which uses mongo at level 0)
   # these are needed services, most uses kafka at level 0
 
-startup_level:
+#startup_level:
