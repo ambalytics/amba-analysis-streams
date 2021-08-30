@@ -19,12 +19,12 @@ services:
     links:
       - zookeeper
     environment:
-      KAFKA_BROKER_ID: 1
-      KAFKA_CREATE_TOPICS: "events_unlinked:1:1,events_unlinked-discusses:3:1,events_unlinked-crossref:3:1,events_linked:1:1,events_linked-discusses:3:1,events_unknown:3:1,events_processed:1:1,events_processed-discusses:3:1,events_aggregated:3:1"
-      KAFKA_ADVERTISED_HOST_NAME: "kafka"
-      KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
-      KAFKA_ADVERTISED_PORT: "9092"
-      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://kafka:9092"
+      KAFKA_BROKER_ID: ${KAFKA_BROKER_ID}
+      KAFKA_CREATE_TOPICS: "${KAFKA_CREATE_TOPICS}"
+      KAFKA_ADVERTISED_HOST_NAME: "${KAFKA_ADVERTISED_HOST_NAME}"
+      KAFKA_ZOOKEEPER_CONNECT: "${KAFKA_ZOOKEEPER_CONNECT}"
+      KAFKA_ADVERTISED_PORT: "${KAFKA_ADVERTISED_PORT}"
+      KAFKA_ADVERTISED_LISTENERS: "${KAFKA_ADVERTISED_LISTENERS_PREFIX}${KAFKA_BOOTRSTRAP_SERVER}"
     networks:
       - backend
 
@@ -33,11 +33,11 @@ services:
     image: mongo
     container_name: mongo-db
     ports:
-      - "27017:27017"
+      - "${MONGO_PORT}"
     environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: example
-      MONGO_INITDB_DATABASE: events
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGO_INITDB_DATABASE}
     networks:
       - backend
 
@@ -50,6 +50,9 @@ services:
     container_name: twitter-connector
     depends_on:
       - kafka
+    environment:
+      KAFKA_BOOTRSTRAP_SERVER: ${KAFKA_BOOTRSTRAP_SERVER}
+      BERARER_TOKEN: ${BERARER_TOKEN}
     networks:
       - backend
 
@@ -60,6 +63,13 @@ services:
     mem_limit: 1g
     depends_on:
       - connector_twitter
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_HOST: ${POSTGRES_HOST}
+      POSTGRES_PORT: ${POSTGRES_PORT}
+      KAFKA_BOOTRSTRAP_SERVER: ${KAFKA_BOOTRSTRAP_SERVER}
     networks:
       - backend
 
@@ -69,6 +79,13 @@ services:
     cpus: 0.5
     depends_on:
       - connector_twitter
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_HOST: ${POSTGRES_HOST}
+      POSTGRES_PORT: ${POSTGRES_PORT}
+      KAFKA_BOOTRSTRAP_SERVER: ${KAFKA_BOOTRSTRAP_SERVER}
     networks:
       - backend
 
@@ -77,6 +94,8 @@ services:
     container_name: mongodb-connector
     depends_on:
       - mongo_db
+    environment:
+      KAFKA_BOOTRSTRAP_SERVER: ${KAFKA_BOOTRSTRAP_SERVER}
     networks:
       - backend
 
@@ -86,6 +105,13 @@ services:
     mem_limit: 1g
     depends_on:
       - kafka
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_HOST: ${POSTGRES_HOST}
+      POSTGRES_PORT: ${POSTGRES_PORT}
+      KAFKA_BOOTRSTRAP_SERVER: ${KAFKA_BOOTRSTRAP_SERVER}
     networks:
       - backend
 
@@ -94,6 +120,8 @@ services:
     container_name: aggregator
     depends_on:
       - kafka
+    environment:
+      KAFKA_BOOTRSTRAP_SERVER: ${KAFKA_BOOTRSTRAP_SERVER}
     networks:
       - backend
 
@@ -101,9 +129,39 @@ services:
     image: api
     container_name: api
     ports:
-      - "8080:80"
+      - "${API_PORT}"
     depends_on:
       - kafka
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_HOST: ${POSTGRES_HOST}
+      POSTGRES_PORT: ${POSTGRES_PORT}
+      KAFKA_BOOTRSTRAP_SERVER: ${KAFKA_BOOTRSTRAP_SERVER}
+    networks:
+      - backend
+
+
+  db:
+    image: postgres
+#    restart: always
+    container_name: postgres
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_DB: ${POSTGRES_DB}
+    networks:
+      - backend
+    volumes:
+      - ./db:/docker-entrypoint-initdb.d/
+
+  adminer:
+    image: adminer
+    container_name: adminer
+#    restart: always
+    ports:
+      - "${ADMINER_PORT}"
     networks:
       - backend
 
@@ -111,7 +169,7 @@ networks:
   backend:
     driver: bridge
 
-
+# todo kafka topics
 # https://docs.docker.com/compose/compose-file/compose-file-v3/#healthcheck
 # for better waiting
 # processed <-> aggregated need same amount of partitions for faust to work
