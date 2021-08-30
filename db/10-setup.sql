@@ -1,8 +1,8 @@
 -- SQL dump generated using DBML (dbml-lang.org)
 -- Database: PostgreSQL
--- Generated at: 2021-08-30T20:28:17.608Z
+-- Generated at: 2021-08-30T21:12:28.151Z
 
-CREATE TYPE "PublicationType" AS ENUM (
+CREATE TYPE "publication_type" AS ENUM (
   'UNKNOWN',
   'BOOK',
   'BOOK_CHAPTER',
@@ -18,7 +18,7 @@ CREATE TYPE "PublicationType" AS ENUM (
 CREATE TABLE "Publication" (
   "id" SERIAL PRIMARY KEY,
   "doi" varchar UNIQUE NOT NULL,
-  "type" PublicationType,
+  "type" publication_type,
   "pubDate" varchar,
   "year" int,
   "publisher" varchar,
@@ -49,28 +49,33 @@ CREATE TABLE "Author" (
 );
 
 CREATE TABLE "PublicationCitation" (
-  "publicationDoi" int,
-  "citationId" int
+  "publicationDoi" varchar,
+  "citationId" varchar,
+  PRIMARY KEY ("publicationDoi", "citationId")
 );
 
 CREATE TABLE "PublicationReference" (
-  "publicationDoi" int,
-  "referenceId" int
+  "publicationDoi" varchar,
+  "referenceId" varchar,
+  PRIMARY KEY ("publicationDoi", "referenceId")
 );
 
 CREATE TABLE "PublicationFieldOfStudy" (
-  "publicationDoi" int,
-  "fieldOfStudyId" int
+  "publicationDoi" varchar,
+  "fieldOfStudyId" int,
+  PRIMARY KEY ("publicationDoi", "fieldOfStudyId")
 );
 
 CREATE TABLE "PublicationAuthor" (
-  "publicationDoi" int,
-  "authorId" int
+  "publicationDoi" varchar,
+  "authorId" int,
+  PRIMARY KEY ("publicationDoi", "authorId")
 );
 
 CREATE TABLE "PublicationSource" (
-  "publicationDoi" int,
-  "sourceId" int
+  "publicationDoi" varchar,
+  "sourceId" int,
+  PRIMARY KEY ("publicationDoi", "sourceId")
 );
 
 CREATE TABLE "DiscussionData" (
@@ -115,22 +120,27 @@ CREATE TABLE "DiscussionAuthor" (
 
 CREATE TABLE "DiscussionEntityData" (
   "discussionDataId" int,
-  "discussionEntityId" int
+  "discussionEntityId" int,
+  PRIMARY KEY ("discussionDataId", "discussionEntityId")
 );
 
 CREATE TABLE "DiscussionAuthorData" (
   "discussionDataId" int,
-  "discussionAuthorId" int
+  "discussionAuthorId" int,
+  PRIMARY KEY ("discussionDataId", "discussionAuthorId")
 );
 
 CREATE TABLE "DiscussionWordData" (
   "discussionDataId" int,
-  "discussionWordId" int
+  "discussionWordId" int,
+  "count" int,
+  PRIMARY KEY ("discussionDataId", "discussionWordId")
 );
 
 CREATE TABLE "DiscussionHashtagData" (
   "discussionDataId" int,
-  "iscussionHashtagId" int
+  "iscussionHashtagId" int,
+  PRIMARY KEY ("discussionDataId", "iscussionHashtagId")
 );
 
 ALTER TABLE "PublicationCitation" ADD FOREIGN KEY ("publicationDoi") REFERENCES "Publication" ("doi");
@@ -170,5 +180,6 @@ ALTER TABLE "DiscussionWordData" ADD FOREIGN KEY ("discussionWordId") REFERENCES
 ALTER TABLE "DiscussionHashtagData" ADD FOREIGN KEY ("discussionDataId") REFERENCES "DiscussionData" ("id");
 
 ALTER TABLE "DiscussionHashtagData" ADD FOREIGN KEY ("iscussionHashtagId") REFERENCES "DiscussionHashtag" ("id");
+
 
 COMMENT ON COLUMN "Publication"."id" IS 'start with high value';
