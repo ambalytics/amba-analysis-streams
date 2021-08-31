@@ -69,8 +69,14 @@ services:
   perculator:
     image: ghcr.io/ambalytics/amba-analysis-worker-perculator/amba-analysis-worker-perculator:latest
     container_name: twitter-perculator
-    cpus: 0.5
-    mem_limit: 1g
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 1G
+        reservations:
+          cpus: '0.25'
+          memory: 100M
     depends_on:
       - connector_twitter
     environment:
@@ -86,7 +92,14 @@ services:
   worker_twitter:
     image: ghcr.io/ambalytics/amba-analysis-worker-discussion/amba-analysis-worker-twitter:latest
     container_name: twitter-worker
-    cpus: 0.5
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 1G
+        reservations:
+          cpus: '0.25'
+          memory: 100M
     depends_on:
       - connector_twitter
     environment:
@@ -113,7 +126,12 @@ services:
   worker_pubfinder: # --build for restart
     image: ghcr.io/ambalytics/amba-analysis-worker-pubfinder/amba-analysis-worker-pubfinder:latest
     container_name: pubfinder-worker
-    mem_limit: 1g
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 100M
     depends_on:
       - kafka
     environment:
