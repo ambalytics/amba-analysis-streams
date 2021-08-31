@@ -1,6 +1,6 @@
 -- SQL dump generated using DBML (dbml-lang.org)
 -- Database: PostgreSQL
--- Generated at: 2021-08-30T21:12:28.151Z
+-- Generated at: 2021-08-31T10:04:33.412Z
 
 CREATE TYPE "publication_type" AS ENUM (
   'UNKNOWN',
@@ -80,9 +80,12 @@ CREATE TABLE "PublicationSource" (
 
 CREATE TABLE "DiscussionData" (
   "id" SERIAL PRIMARY KEY,
-  "publicationId" int,
+  "publicationDoi" varchar,
   "createdAt" timestamp,
-  "score" int,
+  "score" float,
+  "time_score" float,
+  "type_score" float,
+  "user_score" float,
   "abstractDifference" float,
   "length" int,
   "questions" int,
@@ -139,8 +142,8 @@ CREATE TABLE "DiscussionWordData" (
 
 CREATE TABLE "DiscussionHashtagData" (
   "discussionDataId" int,
-  "iscussionHashtagId" int,
-  PRIMARY KEY ("discussionDataId", "iscussionHashtagId")
+  "discussionHashtagId" int,
+  PRIMARY KEY ("discussionDataId", "discussionHashtagId")
 );
 
 ALTER TABLE "PublicationCitation" ADD FOREIGN KEY ("publicationDoi") REFERENCES "Publication" ("doi");
@@ -163,7 +166,7 @@ ALTER TABLE "PublicationSource" ADD FOREIGN KEY ("publicationDoi") REFERENCES "P
 
 ALTER TABLE "PublicationSource" ADD FOREIGN KEY ("sourceId") REFERENCES "Source" ("id");
 
-ALTER TABLE "DiscussionData" ADD FOREIGN KEY ("publicationId") REFERENCES "Publication" ("id");
+ALTER TABLE "DiscussionData" ADD FOREIGN KEY ("publicationDoi") REFERENCES "Publication" ("doi");
 
 ALTER TABLE "DiscussionEntityData" ADD FOREIGN KEY ("discussionDataId") REFERENCES "DiscussionData" ("id");
 
@@ -179,7 +182,7 @@ ALTER TABLE "DiscussionWordData" ADD FOREIGN KEY ("discussionWordId") REFERENCES
 
 ALTER TABLE "DiscussionHashtagData" ADD FOREIGN KEY ("discussionDataId") REFERENCES "DiscussionData" ("id");
 
-ALTER TABLE "DiscussionHashtagData" ADD FOREIGN KEY ("iscussionHashtagId") REFERENCES "DiscussionHashtag" ("id");
+ALTER TABLE "DiscussionHashtagData" ADD FOREIGN KEY ("discussionHashtagId") REFERENCES "DiscussionHashtag" ("id");
 
 
 COMMENT ON COLUMN "Publication"."id" IS 'start with high value';
