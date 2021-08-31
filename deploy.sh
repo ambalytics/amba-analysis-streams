@@ -1,6 +1,6 @@
 #!/bin/sh
 
-COMPOSE_FOLDER=/home/amba/amba-analysis-streams
+COMPOSE_FOLDER=~/amba-analysis-streams
 
 cd $COMPOSE_FOLDER
 git pull origin main
