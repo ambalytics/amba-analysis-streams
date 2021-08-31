@@ -212,7 +212,7 @@ services:
       # we save our directory of keys on our host server
       - ./certbot/conf:/etc/letsencrypt
       - ./certbot/logs:/var/log/letsencrypt
-    # command: certonly --dns-route53 --email it@ambalytics.com --agree-tos --no-eff-email -d analysis.ambalytics.cloud
+    # command: certonly --dns-route53 --email it@ambalytics.com --agree-tos --no-eff-email -d api-analysis.ambalytics.com
     environment:
       - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
