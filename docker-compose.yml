@@ -62,7 +62,7 @@ services:
       - kafka
     environment:
       KAFKA_BOOTRSTRAP_SERVER: ${KAFKA_BOOTRSTRAP_SERVER}
-      BERARER_TOKEN: ${secrets.TWITTER_BEARER_TOKEN}
+      BERARER_TOKEN: ${TWITTER_BEARER_TOKEN}
     networks:
       - backend
 
