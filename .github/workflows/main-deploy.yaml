@@ -1,0 +1,24 @@
+name: Main Branch
+
+on:
+  push:
+    branches:
+      - "main"
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy to Production Host
+    runs-on: ubuntu-18.04
+
+    steps:
+      - name: Run deploy script via ssh
+        uses: garygrossgarten/github-action-ssh@release
+        with:
+          command: sh ~/amba-analysis-streams/deploy.sh
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USERNAME }}
+          password: ${{ secrets.DEPLOY_PASSWORD }}
+          privateKey: ${{ secrets.DEPLOY_PRIVATEKEY}}
+          tryKeyboard: true

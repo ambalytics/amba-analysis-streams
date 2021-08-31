@@ -4,7 +4,7 @@
 #networks:
 #  events_kafka:
 #    name: events_kafka
-
+version: "3"
 
 services:
   zookeeper:
@@ -29,25 +29,25 @@ services:
     links:
       - zookeeper
     environment:
-      KAFKA_BROKER_ID: 1
-      KAFKA_CREATE_TOPICS: "events_unlinked:1:1,events_unlinked-discusses:4:1,events_unlinked-crossref:4:1,events_linked:1:1,events_linked-discusses:3:1,events_unknown:4:1,events_processed:1:1,events_processed-discusses:4:1,events_aggregated:1:1"
-      KAFKA_ADVERTISED_HOST_NAME: "kafka"
-      KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
-      KAFKA_ADVERTISED_PORT: "9092"
-      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://kafka:9092"
+      KAFKA_BROKER_ID: ${KAFKA_BROKER_ID}
+      KAFKA_CREATE_TOPICS: "${KAFKA_CREATE_TOPICS}"
+      KAFKA_ADVERTISED_HOST_NAME: "${KAFKA_ADVERTISED_HOST_NAME}"
+      KAFKA_ZOOKEEPER_CONNECT: "${KAFKA_ZOOKEEPER_CONNECT}"
+      KAFKA_ADVERTISED_PORT: "${KAFKA_ADVERTISED_PORT}"
+      KAFKA_ADVERTISED_LISTENERS: "${KAFKA_ADVERTISED_LISTENERS_PREFIX}${KAFKA_BOOTRSTRAP_SERVER}"
     networks:
       - backend
 
 
   mongo_db:
-    image: mongo
+    image: mongo:5.0.2
     container_name: mongo-db
     ports:
-      - "27017:27017"
+      - "${MONGO_PORT}"
     environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: example
-      MONGO_INITDB_DATABASE: events
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGO_INITDB_DATABASE}
     networks:
       - backend
 
@@ -56,57 +56,151 @@ services:
 # create this file temporary during github workflow
 
   connector_twitter:
-    image: twitter-connector
+    image: ghcr.io/ambalytics/amba-connector-twitter/amba-connector-twitter:latest
     container_name: twitter-connector
     depends_on:
       - kafka
+    environment:
+      KAFKA_BOOTRSTRAP_SERVER: ${KAFKA_BOOTRSTRAP_SERVER}
+      BERARER_TOKEN: ${secrets.TWITTER_BEARER_TOKEN}
     networks:
       - backend
 
   perculator:
-    image: twitter-perculator
+    image: ghcr.io/ambalytics/amba-analysis-worker-perculator/amba-analysis-worker-perculator:latest
     container_name: twitter-perculator
+    cpus: 0.5
+    mem_limit: 1g
     depends_on:
       - connector_twitter
-      - mongo_db
+    environment:
+      #      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      #      POSTGRES_USER: ${POSTGRES_USER}
+      #      POSTGRES_DB: ${POSTGRES_DB}
+      #      POSTGRES_HOST: ${POSTGRES_HOST}
+      #      POSTGRES_PORT: ${POSTGRES_PORT}
+      KAFKA_BOOTRSTRAP_SERVER: ${KAFKA_BOOTRSTRAP_SERVER}
     networks:
       - backend
 
   worker_twitter:
-    image: twitter-worker
+    image: ghcr.io/ambalytics/amba-analysis-worker-discussion/amba-analysis-worker-twitter:latest
     container_name: twitter-worker
+    cpus: 0.5
     depends_on:
       - connector_twitter
+    environment:
+      #      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      #      POSTGRES_USER: ${POSTGRES_USER}
+      #      POSTGRES_DB: ${POSTGRES_DB}
+      #      POSTGRES_HOST: ${POSTGRES_HOST}
+      #      POSTGRES_PORT: ${POSTGRES_PORT}
+      KAFKA_BOOTRSTRAP_SERVER: ${KAFKA_BOOTRSTRAP_SERVER}
     networks:
       - backend
 
   connector_mongodb:
-    image: mongodb-connector
+    image: ghcr.io/ambalytics/amba-connector-mongodb/amba-connector-mongodb:latest
     container_name: mongodb-connector
     depends_on:
       - mongo_db
+    environment:
+      KAFKA_BOOTRSTRAP_SERVER: ${KAFKA_BOOTRSTRAP_SERVER}
     networks:
       - backend
 
-  worker_pubfinder:
-    image: pubfinder-worker
+
+  worker_pubfinder: # --build for restart
+    image: ghcr.io/ambalytics/amba-analysis-worker-pubfinder/amba-analysis-worker-pubfinder:latest
     container_name: pubfinder-worker
+    mem_limit: 1g
     depends_on:
       - kafka
-      - mongo_db
+    environment:
+      #      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      #      POSTGRES_USER: ${POSTGRES_USER}
+      #      POSTGRES_DB: ${POSTGRES_DB}
+      #      POSTGRES_HOST: ${POSTGRES_HOST}
+      #      POSTGRES_PORT: ${POSTGRES_PORT}
+      KAFKA_BOOTRSTRAP_SERVER: ${KAFKA_BOOTRSTRAP_SERVER}
+    networks:
+      - backend
+
+  aggregator:
+    image: ghcr.io/ambalytics/amba-analysis-worker-aggregator/amba-analysis-worker-aggregator:latest
+    container_name: aggregator
+    depends_on:
+      - kafka
+    environment:
+      KAFKA_BOOTRSTRAP_SERVER: ${KAFKA_BOOTRSTRAP_SERVER}
     networks:
       - backend
 
   api:
-    image: api
+    image: ghcr.io/ambalytics/amba-analysis-streams-api/amba-analysis-streams-api:latest
     container_name: api
     ports:
-      - "8080:80"
+      - "${API_PORT}"
     depends_on:
       - kafka
-      - mongo_db
+    environment:
+      #      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      #      POSTGRES_USER: ${POSTGRES_USER}
+      #      POSTGRES_DB: ${POSTGRES_DB}
+      #      POSTGRES_HOST: ${POSTGRES_HOST}
+      #      POSTGRES_PORT: ${POSTGRES_PORT}
+      KAFKA_BOOTRSTRAP_SERVER: ${KAFKA_BOOTRSTRAP_SERVER}
     networks:
       - backend
+
+
+  #  postgres:
+  #    image: postgres
+  ##    restart: always
+  #    container_name: postgres
+  #    environment:
+  #      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+  #      POSTGRES_USER: ${POSTGRES_USER}
+  #      POSTGRES_DB: ${POSTGRES_DB}
+  #    ports:
+  #      - "${POSTGRES_PORT}:${POSTGRES_PORT}"
+  #    networks:
+  #      - backend
+  #    volumes:
+  #      - ./db:/docker-entrypoint-initdb.d/
+
+
+
+  webserver:
+    # nginx needs wordpress started first
+    depends_on:
+      - wordpress
+    image: nginx:1.15.12-alpine
+    container_name: webserver
+    restart: unless-stopped
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./certbot/conf:/etc/nginx/ssl
+      - ./certbot/data:/var/www/certbot
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      - PHP_MEMORY_LIMIT=256M
+
+  certbot:
+    depends_on:
+      - webserver
+    image: certbot/dns-route53:latest
+    container_name: certbot
+    volumes:
+      # we save our directory of keys on our host server
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/logs:/var/log/letsencrypt
+    # command: certonly --dns-route53 --email it@ambalytics.com --agree-tos --no-eff-email -d ambalytics.com -d www.ambalytics.com -d ambalytics.cloud -d www.ambalytics.cloud -d 107.hosts.ambalytics.com
+    environment:
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
 
 networks:
   backend:
