@@ -18,9 +18,6 @@ Generic Stream Processing Framework for processing of Events related to scientif
 | POSTGRES_USER | streams | |
 | POSTGRES_DB | amba | |
 | POSTGRES_HOST | postgres | |
-| POSTGRES_PORT | 5432 | |
-| API_PORT | 8080:80 | |
-| MONGO_PORT | 27017:27017 | |
 | MONGO_INITDB_ROOT_USERNAME | root | |
 | MONGO_INITDB_ROOT_PASSWORD | postgres | example |
 | MONGO_INITDB_DATABASE | postgres | events |
