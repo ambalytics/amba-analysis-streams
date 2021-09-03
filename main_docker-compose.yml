@@ -1,6 +1,8 @@
 ---
 #name: amba-analysis-stream
 
+version: "3"
+
 services:
   zookeeper:
     image: wurstmeister/zookeeper
@@ -32,8 +34,8 @@ services:
 
 
   mongo_db:
-    image: mongo
-    container_name: mongo-db
+    image: mongo:5.0.2
+    container_name: mongo_db
     ports:
       - "${MONGO_PORT}"
     environment:
@@ -48,7 +50,7 @@ services:
 # create this file temporary during github workflow
 
   connector_twitter:
-    image: connector_twitter
+    image: ghcr.io/ambalytics/amba-connector-twitter/amba-connector-twitter:latest
     container_name: connector_twitter
     restart: unless-stopped
     depends_on:
@@ -60,7 +62,7 @@ services:
       - backend
 
   perculator:
-    image: perculator
+    image: ghcr.io/ambalytics/amba-analysis-worker-perculator/amba-analysis-worker-perculator:latest
     container_name: perculator
     deploy:
       resources:
@@ -84,7 +86,7 @@ services:
       - backend
 
   worker_twitter:
-    image: worker_twitter
+    image: ghcr.io/ambalytics/amba-analysis-worker-discussion/amba-analysis-worker-twitter:latest
     container_name: worker_twitter
     deploy:
       resources:
@@ -119,7 +121,7 @@ services:
 #      - backend
 
   worker_pubfinder: # --build for restart
-    image: worker_pubfinder # -t for building
+    image: ghcr.io/ambalytics/amba-analysis-worker-pubfinder/amba-analysis-worker-pubfinder:latest # -t for building
     container_name: worker_pubfinder
     deploy:
       resources:
@@ -141,7 +143,7 @@ services:
       - backend
 
   aggregator:
-    image: aggregator
+    image: ghcr.io/ambalytics/amba-analysis-worker-aggregator/amba-analysis-worker-aggregator:latest
     container_name: aggregator
     restart: unless-stopped
     depends_on:
@@ -152,7 +154,7 @@ services:
       - backend
 
   api:
-    image: api
+    image: ghcr.io/ambalytics/amba-analysis-streams-api/amba-analysis-streams-api:latest
     container_name: api
     restart: unless-stopped
     ports:
@@ -185,6 +187,7 @@ services:
     volumes:
       - ./db:/docker-entrypoint-initdb.d/
 
+
   adminer:
     image: adminer
     container_name: adminer
@@ -194,14 +197,35 @@ services:
     networks:
       - backend
 
+  webserver:
+    image: nginx:1.15.12-alpine
+    container_name: webserver
+    restart: unless-stopped
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./certbot/conf:/etc/nginx/ssl
+      - ./certbot/data:/var/www/certbot
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      - PHP_MEMORY_LIMIT=256M
+
+  certbot:
+    depends_on:
+      - webserver
+    image: certbot/dns-route53:latest
+    container_name: certbot
+    volumes:
+      # we save our directory of keys on our host server
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/logs:/var/log/letsencrypt
+    # command: certonly --dns-route53 --email it@ambalytics.com --agree-tos --no-eff-email -d api-analysis.ambalytics.com
+    environment:
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      -
+
 networks:
   backend:
     driver: bridge
-
-# todo kafka topics
-# https://docs.docker.com/compose/compose-file/compose-file-v3/#healthcheck
-# for better waiting
-# processed <-> aggregated need same amount of partitions for faust to work
-#
-# topicname:partition:replica
-# "events_unlinked:1:1, events_unlinked-discussed:3:1, events_unlinked-crossref:3:1, events_linked:1:1, events_linked-discussed:3:1, events_unknown:3:1, events_processed:1:1, events_processed-discussed:3:1, events_aggregated:1:1"
