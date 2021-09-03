@@ -43,7 +43,7 @@ services:
     restart: always
     environment:
       KAFKA_BOOTRSTRAP_SERVER: ${KAFKA_BOOTRSTRAP_SERVER}
-      BERARER_TOKEN: ${TWITTER_BEARER_TOKEN}
+      TWITTER_BEARER_TOKEN: ${TWITTER_BEARER_TOKEN}
     networks:
       - ambaanalysisnet
 
