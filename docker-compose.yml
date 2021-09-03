@@ -1,6 +1,6 @@
 ---
 #name: amba-analysis-stream
-version: "2.2"
+version: "3"
 
 services:
   zookeeper:
@@ -11,7 +11,7 @@ services:
 #    ports:
 #      - "2181:2181"
     networks:
-      - backend
+      - ambaanalysisnet
 
 
   kafka:
@@ -33,7 +33,7 @@ services:
       KAFKA_ADVERTISED_PORT: "${KAFKA_ADVERTISED_PORT}"
       KAFKA_ADVERTISED_LISTENERS: "${KAFKA_ADVERTISED_LISTENERS_PREFIX}${KAFKA_BOOTRSTRAP_SERVER}"
     networks:
-      - backend
+      - ambaanalysisnet
 
   connector-twitter:
     image: ghcr.io/ambalytics/amba-connector-twitter/amba-connector-twitter:latest
@@ -45,13 +45,11 @@ services:
       KAFKA_BOOTRSTRAP_SERVER: ${KAFKA_BOOTRSTRAP_SERVER}
       BERARER_TOKEN: ${TWITTER_BEARER_TOKEN}
     networks:
-      - backend
+      - ambaanalysisnet
 
   twitter-perculator:
     image: ghcr.io/ambalytics/amba-analysis-worker-perculator/amba-analysis-worker-perculator:latest
     container_name: twitter-perculator
-    cpus: '0.50'
-    mem_limit: 1G
     depends_on:
       - kafka
       - connector-twitter
@@ -69,13 +67,11 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       KAFKA_BOOTRSTRAP_SERVER: ${KAFKA_BOOTRSTRAP_SERVER}
     networks:
-      - backend
+      - ambaanalysisnet
 
   worker-twitter:
     image: ghcr.io/ambalytics/amba-analysis-worker-discussion/amba-analysis-worker-twitter:latest
     container_name: worker-twitter
-    cpus: '0.50'
-    mem_limit: 1G
     depends_on:
       - kafka
       - connector-twitter
@@ -89,13 +85,11 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       KAFKA_BOOTRSTRAP_SERVER: ${KAFKA_BOOTRSTRAP_SERVER}
     networks:
-      - backend
+      - ambaanalysisnet
 
   worker-pubfinder: # --build for restart
     image: ghcr.io/ambalytics/amba-analysis-worker-pubfinder/amba-analysis-worker-pubfinder:latest
     container_name: worker-pubfinder
-    cpus: '0.50'
-    mem_limit: 1G
     depends_on:
       - kafka
       - postgres
@@ -112,7 +106,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       KAFKA_BOOTRSTRAP_SERVER: ${KAFKA_BOOTRSTRAP_SERVER}
     networks:
-      - backend
+      - ambaanalysisnet
 
   aggregator:
     image: ghcr.io/ambalytics/amba-analysis-worker-aggregator/amba-analysis-worker-aggregator:latest
@@ -123,7 +117,7 @@ services:
     environment:
       KAFKA_BOOTRSTRAP_SERVER: ${KAFKA_BOOTRSTRAP_SERVER}
     networks:
-      - backend
+      - ambaanalysisnet
 
   mongo-db:
     image: mongo:5.0.2
@@ -136,7 +130,7 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
       MONGO_INITDB_DATABASE: ${MONGO_DB}
     networks:
-      - backend
+      - ambaanalysisnet
   #    volumes:
   #        - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
 
@@ -151,7 +145,7 @@ services:
     #ports:
     #  - "5432:5432"
     networks:
-      - backend
+      - ambaanalysisnet
     volumes:
       - ./postgres/initdb.d:/docker-entrypoint-initdb.d/
 
@@ -172,7 +166,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       KAFKA_BOOTRSTRAP_SERVER: ${KAFKA_BOOTRSTRAP_SERVER}
     networks:
-      - backend
+      - ambaanalysisnet
 
   webserver:
     image: nginx:1.15.12-alpine
@@ -188,7 +182,7 @@ services:
     environment:
       - PHP_MEMORY_LIMIT=256M
     networks:
-      - backend
+      - ambaanalysisnet
 
   certbot:
     depends_on:
@@ -205,7 +199,7 @@ services:
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
 
 networks:
-  backend:
+  ambaanalysisnet:
 
 # todo kafka topics
 # https://docs.docker.com/compose/compose-file/compose-file-v3/#healthcheck
