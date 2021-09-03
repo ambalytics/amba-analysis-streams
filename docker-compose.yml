@@ -22,6 +22,7 @@ services:
 #    ports:
 #      - "9092:9092"
     hostname: kafka
+    restart: always
     links:
       - zookeeper
     environment:
@@ -39,6 +40,7 @@ services:
     container_name: connector-twitter
     depends_on:
       - kafka
+    restart: always
     environment:
       KAFKA_BOOTRSTRAP_SERVER: ${KAFKA_BOOTRSTRAP_SERVER}
       BERARER_TOKEN: ${TWITTER_BEARER_TOKEN}
@@ -57,7 +59,11 @@ services:
           cpus: '0.25'
           memory: 100M
     depends_on:
+      - kafka
       - connector-twitter
+      - postgres
+      - mongo-db
+    restart: always
     environment:
       MONGO_HOST: ${MONGO_HOST}
       MONGO_PORT: ${MONGO_PORT}
@@ -83,7 +89,10 @@ services:
           cpus: '0.25'
           memory: 100M
     depends_on:
+      - kafka
       - connector-twitter
+      - postgres
+    restart: always
     environment:
       POSTGRES_HOST: ${POSTGRES_HOST}
       POSTGRES_PORT: ${POSTGRES_PORT}
@@ -105,6 +114,9 @@ services:
           memory: 100M
     depends_on:
       - kafka
+      - postgres
+      - mongo-db
+    restart: always
     environment:
       MONGO_HOST: ${MONGO_HOST}
       MONGO_PORT: ${MONGO_PORT}
@@ -123,6 +135,7 @@ services:
     container_name: aggregator
     depends_on:
       - kafka
+    restart: always
     environment:
       KAFKA_BOOTRSTRAP_SERVER: ${KAFKA_BOOTRSTRAP_SERVER}
     networks:
@@ -133,6 +146,7 @@ services:
     container_name: mongo-db
     ports:
       - "${MONGO_PORT}:${MONGO_PORT}"
+    restart: always
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
@@ -144,7 +158,7 @@ services:
 
   postgres:
     image: postgres
-    restart: unless-stopped
+    restart: always
     container_name: postgres
     environment:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -164,6 +178,8 @@ services:
       - "8080:80"
     depends_on:
       - kafka
+      - postgres
+    restart: always
     environment:
       POSTGRES_HOST: ${POSTGRES_HOST}
       POSTGRES_PORT: ${POSTGRES_PORT}
@@ -177,7 +193,7 @@ services:
   webserver:
     image: nginx:1.15.12-alpine
     container_name: webserver
-    restart: unless-stopped
+    restart: always
     volumes:
       - ./nginx/conf.d:/etc/nginx/conf.d
       - ./certbot/conf:/etc/nginx/ssl
