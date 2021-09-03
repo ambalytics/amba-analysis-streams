@@ -1,6 +1,6 @@
 -- SQL dump generated using DBML (dbml-lang.org)
 -- Database: PostgreSQL
--- Generated at: 2021-08-31T10:04:33.412Z
+-- Generated at: 2021-08-31T13:44:27.861Z
 
 CREATE TYPE "publication_type" AS ENUM (
   'UNKNOWN',
@@ -16,7 +16,7 @@ CREATE TYPE "publication_type" AS ENUM (
 );
 
 CREATE TABLE "Publication" (
-  "id" SERIAL PRIMARY KEY,
+  "id" BIGSERIAL PRIMARY KEY,
   "doi" varchar UNIQUE NOT NULL,
   "type" publication_type,
   "pubDate" varchar,
@@ -29,72 +29,73 @@ CREATE TABLE "Publication" (
 );
 
 CREATE TABLE "Source" (
-  "id" SERIAL PRIMARY KEY,
+  "id" BIGSERIAL PRIMARY KEY,
   "title" varchar,
   "url" varchar,
   "license" varchar
 );
 
 CREATE TABLE "FieldOfStudy" (
-  "id" SERIAL PRIMARY KEY,
+  "id" BIGSERIAL PRIMARY KEY,
   "name" varchar,
   "normalizedName" varchar,
   "level" int
 );
 
 CREATE TABLE "Author" (
-  "id" SERIAL PRIMARY KEY,
+  "id" BIGSERIAL PRIMARY KEY,
   "name" varchar,
   "normalizedName" varchar
 );
 
 CREATE TABLE "PublicationCitation" (
-  "publicationDoi" varchar,
-  "citationId" varchar,
+  "publicationDoi" varchar NOT NULL,
+  "citationId" varchar NOT NULL,
   PRIMARY KEY ("publicationDoi", "citationId")
 );
 
 CREATE TABLE "PublicationReference" (
-  "publicationDoi" varchar,
-  "referenceId" varchar,
+  "publicationDoi" varchar NOT NULL,
+  "referenceId" varchar NOT NULL,
   PRIMARY KEY ("publicationDoi", "referenceId")
 );
 
 CREATE TABLE "PublicationFieldOfStudy" (
-  "publicationDoi" varchar,
-  "fieldOfStudyId" int,
+  "publicationDoi" varchar NOT NULL,
+  "fieldOfStudyId" bigint NOT NULL,
   PRIMARY KEY ("publicationDoi", "fieldOfStudyId")
 );
 
 CREATE TABLE "PublicationAuthor" (
-  "publicationDoi" varchar,
-  "authorId" int,
+  "publicationDoi" varchar NOT NULL,
+  "authorId" bigint NOT NULL,
   PRIMARY KEY ("publicationDoi", "authorId")
 );
 
 CREATE TABLE "PublicationSource" (
-  "publicationDoi" varchar,
-  "sourceId" int,
+  "publicationDoi" varchar NOT NULL,
+  "sourceId" bigint NOT NULL,
   PRIMARY KEY ("publicationDoi", "sourceId")
 );
 
 CREATE TABLE "DiscussionData" (
-  "id" SERIAL PRIMARY KEY,
+  "id" BIGSERIAL PRIMARY KEY,
   "publicationDoi" varchar,
   "createdAt" timestamp,
   "score" float,
-  "time_score" float,
-  "type_score" float,
-  "user_score" float,
+  "timeScore" float,
+  "typeScore" float,
+  "userScore" float,
+  "language" varchar,
+  "source" varchar,
   "abstractDifference" float,
   "length" int,
   "questions" int,
   "exclamations" int,
   "type" varchar,
   "sentiment" float,
-  "subjId" int,
+  "subjId" bigint,
   "followers" int,
-  "verified" boolean,
   "botScore" float,
   "authorName" varchar,
   "authorLocation" varchar,
@@ -102,47 +103,47 @@ CREATE TABLE "DiscussionData" (
 );
 
 CREATE TABLE "DiscussionEntity" (
-  "id" SERIAL PRIMARY KEY,
+  "id" BIGSERIAL PRIMARY KEY,
   "entity" varchar
 );
 
 CREATE TABLE "DiscussionHashtag" (
-  "id" SERIAL PRIMARY KEY,
+  "id" BIGSERIAL PRIMARY KEY,
   "hashtag" varchar
 );
 
 CREATE TABLE "DiscussionWord" (
-  "id" SERIAL PRIMARY KEY,
+  "id" BIGSERIAL PRIMARY KEY,
   "word" varchar
 );
 
 CREATE TABLE "DiscussionAuthor" (
-  "id" SERIAL PRIMARY KEY,
+  "id" BIGSERIAL PRIMARY KEY,
   "name" varchar
 );
 
 CREATE TABLE "DiscussionEntityData" (
-  "discussionDataId" int,
-  "discussionEntityId" int,
+  "discussionDataId" bigint NOT NULL,
+  "discussionEntityId" bigint NOT NULL,
   PRIMARY KEY ("discussionDataId", "discussionEntityId")
 );
 
 CREATE TABLE "DiscussionAuthorData" (
-  "discussionDataId" int,
-  "discussionAuthorId" int,
+  "discussionDataId" bigint NOT NULL,
+  "discussionAuthorId" bigint NOT NULL,
   PRIMARY KEY ("discussionDataId", "discussionAuthorId")
 );
 
 CREATE TABLE "DiscussionWordData" (
-  "discussionDataId" int,
-  "discussionWordId" int,
+  "discussionDataId" bigint NOT NULL,
+  "discussionWordId" bigint NOT NULL,
   "count" int,
   PRIMARY KEY ("discussionDataId", "discussionWordId")
 );
 
 CREATE TABLE "DiscussionHashtagData" (
-  "discussionDataId" int,
-  "discussionHashtagId" int,
+  "discussionDataId" bigint NOT NULL,
+  "discussionHashtagId" bigint NOT NULL,
   PRIMARY KEY ("discussionDataId", "discussionHashtagId")
 );
 
