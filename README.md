@@ -15,13 +15,15 @@ Generic Stream Processing Framework for processing of Events related to scientif
 | KAFKA_ADVERTISED_PORT | 9092 | |
 | KAFKA_ADVERTISED_LISTENERS_PREFIX | PLAINTEXT:// | |
 | KAFKA_BOOTRSTRAP_SERVER | kafka:9092 | |
-| POSTGRES_USER | streams | |
-| POSTGRES_DB | amba | |
 | POSTGRES_HOST | postgres | |
-| MONGO_INITDB_ROOT_USERNAME | root | |
-| MONGO_INITDB_ROOT_PASSWORD | postgres | example |
-| MONGO_INITDB_DATABASE | postgres | events |
+| POSTGRES_PORT | 5432 | |
+| POSTGRES_DB | amba | |
+| POSTGRES_USER | streams | |
 | POSTGRES_PASSWORD | postgres | REPLACE_ME |
+| MONGO_USERNAME | root | |
+| MONGO_PASSWORD | postgres | example |
+| MONGO_DB | postgres | events |
+| MONGO_PORT | 27017 | |
 | TWITTER_BEARER_TOKEN | - (omitted for security) | see developer.twitter.com |
 | AWS_ACCESS_KEY_ID | - (omitted for security) | this is for certbot SSL DNS auth with Route53 |
 | AWS_SECRET_ACCESS_KEY | - (omitted for security) | this is for certbot SSL DNS auth with Route53 |

@@ -7,11 +7,6 @@ git pull origin main
 
 docker-compose down --volumes --remove-orphans
 
-# delete images
-#docker image rm docker.pkg.github.com/ambalytics/amba-bib-search/amba-bib-search:latest
-#docker image rm docker.pkg.github.com/ambalytics/amba-bib-entities/amba-bib-entities:latest
-#docker image rm docker.pkg.github.com/ambalytics/amba-analysis-networks/amba-analysis-networks:latest
-
 # pull images
 docker pull ghcr.io/ambalytics/amba-connector-twitter/amba-connector-twitter:latest
 docker pull ghcr.io/ambalytics/amba-analysis-worker-perculator/amba-analysis-worker-perculator:latest

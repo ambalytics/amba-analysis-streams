@@ -1,15 +1,14 @@
 ---
 #name: amba-analysis-stream
 
+version: "3"
 
 services:
   zookeeper:
     image: wurstmeister/zookeeper
     container_name: zookeeper
-    restart: always
+    restart: unless-stopped
     hostname: zookeeper
-#    ports:
-#      - "2181:2181"
     networks:
       - backend
 
@@ -17,12 +16,10 @@ services:
   kafka:
     image: wurstmeister/kafka:latest
     container_name: kafka
+    restart: unless-stopped
     depends_on:
       - zookeeper
-#    ports:
-#      - "9092:9092"
     hostname: kafka
-    restart: always
     links:
       - zookeeper
     environment:
@@ -35,21 +32,38 @@ services:
     networks:
       - backend
 
-  connector-twitter:
+
+  mongo_db:
+    image: mongo:5.0.2
+    container_name: mongo_db
+    ports:
+      - "${MONGO_PORT}"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGO_INITDB_DATABASE}
+    networks:
+      - backend
+
+#    volumes:
+#        - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+# create this file temporary during github workflow
+
+  connector_twitter:
     image: ghcr.io/ambalytics/amba-connector-twitter/amba-connector-twitter:latest
-    container_name: connector-twitter
+    container_name: connector_twitter
+    restart: unless-stopped
     depends_on:
       - kafka
-    restart: always
     environment:
       KAFKA_BOOTRSTRAP_SERVER: ${KAFKA_BOOTRSTRAP_SERVER}
       BERARER_TOKEN: ${TWITTER_BEARER_TOKEN}
     networks:
       - backend
 
-  twitter-perculator:
+  perculator:
     image: ghcr.io/ambalytics/amba-analysis-worker-perculator/amba-analysis-worker-perculator:latest
-    container_name: twitter-perculator
+    container_name: perculator
     deploy:
       resources:
         limits:
@@ -58,28 +72,22 @@ services:
         reservations:
           cpus: '0.25'
           memory: 100M
+    restart: unless-stopped
     depends_on:
-      - kafka
-      - connector-twitter
-      - postgres
-      - mongo-db
-    restart: always
+      - connector_twitter
     environment:
-      MONGO_HOST: ${MONGO_HOST}
-      MONGO_PORT: ${MONGO_PORT}
-      MONGO_DB: ${MONGO_DB}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_HOST: ${POSTGRES_HOST}
       POSTGRES_PORT: ${POSTGRES_PORT}
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       KAFKA_BOOTRSTRAP_SERVER: ${KAFKA_BOOTRSTRAP_SERVER}
     networks:
       - backend
 
-  worker-twitter:
+  worker_twitter:
     image: ghcr.io/ambalytics/amba-analysis-worker-discussion/amba-analysis-worker-twitter:latest
-    container_name: worker-twitter
+    container_name: worker_twitter
     deploy:
       resources:
         limits:
@@ -88,44 +96,48 @@ services:
         reservations:
           cpus: '0.25'
           memory: 100M
+    restart: unless-stopped
     depends_on:
-      - kafka
-      - connector-twitter
-      - postgres
-    restart: always
+      - connector_twitter
     environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_HOST: ${POSTGRES_HOST}
       POSTGRES_PORT: ${POSTGRES_PORT}
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       KAFKA_BOOTRSTRAP_SERVER: ${KAFKA_BOOTRSTRAP_SERVER}
     networks:
       - backend
 
-  worker-pubfinder: # --build for restart
-    image: ghcr.io/ambalytics/amba-analysis-worker-pubfinder/amba-analysis-worker-pubfinder:latest
-    container_name: worker-pubfinder
+# only for debug, mongo only left for publications at the moment
+#  connector_mongodb:
+#    image: mongodb-connector
+#    container_name: mongodb-connector
+#    depends_on:
+#      - mongo_db
+#    environment:
+#      KAFKA_BOOTRSTRAP_SERVER: ${KAFKA_BOOTRSTRAP_SERVER}
+#    networks:
+#      - backend
+
+  worker_pubfinder: # --build for restart
+    image: ghcr.io/ambalytics/amba-analysis-worker-pubfinder/amba-analysis-worker-pubfinder:latest # -t for building
+    container_name: worker_pubfinder
     deploy:
       resources:
         limits:
           memory: 1G
         reservations:
           memory: 100M
+    restart: unless-stopped
     depends_on:
       - kafka
-      - postgres
-      - mongo-db
-    restart: always
     environment:
-      MONGO_HOST: ${MONGO_HOST}
-      MONGO_PORT: ${MONGO_PORT}
-      MONGO_DB: ${MONGO_DB}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_HOST: ${POSTGRES_HOST}
       POSTGRES_PORT: ${POSTGRES_PORT}
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       KAFKA_BOOTRSTRAP_SERVER: ${KAFKA_BOOTRSTRAP_SERVER}
     networks:
       - backend
@@ -133,32 +145,36 @@ services:
   aggregator:
     image: ghcr.io/ambalytics/amba-analysis-worker-aggregator/amba-analysis-worker-aggregator:latest
     container_name: aggregator
+    restart: unless-stopped
     depends_on:
       - kafka
-    restart: always
     environment:
       KAFKA_BOOTRSTRAP_SERVER: ${KAFKA_BOOTRSTRAP_SERVER}
     networks:
       - backend
 
-  mongo-db:
-    image: mongo:5.0.2
-    container_name: mongo-db
+  api:
+    image: ghcr.io/ambalytics/amba-analysis-streams-api/amba-analysis-streams-api:latest
+    container_name: api
+    restart: unless-stopped
     ports:
-      - "${MONGO_PORT}:${MONGO_PORT}"
-    restart: always
+      - "${API_PORT}"
+    depends_on:
+      - kafka
     environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
-      MONGO_INITDB_DATABASE: ${MONGO_DB}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_HOST: ${POSTGRES_HOST}
+      POSTGRES_PORT: ${POSTGRES_PORT}
+      KAFKA_BOOTRSTRAP_SERVER: ${KAFKA_BOOTRSTRAP_SERVER}
     networks:
       - backend
-  #    volumes:
-  #        - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+
 
   postgres:
     image: postgres
-    restart: always
+    restart: unless-stopped
     container_name: postgres
     environment:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -169,31 +185,22 @@ services:
     networks:
       - backend
     volumes:
-      - ./postgres/initdb.d:/docker-entrypoint-initdb.d/
+      - ./db:/docker-entrypoint-initdb.d/
 
-  api:
-    image: ghcr.io/ambalytics/amba-analysis-streams-api/amba-analysis-streams-api:latest
-    container_name: api
+
+  adminer:
+    image: adminer
+    container_name: adminer
+    restart: unless-stopped
     ports:
-      - "8080:80"
-    depends_on:
-      - kafka
-      - postgres
-    restart: always
-    environment:
-      POSTGRES_HOST: ${POSTGRES_HOST}
-      POSTGRES_PORT: ${POSTGRES_PORT}
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      KAFKA_BOOTRSTRAP_SERVER: ${KAFKA_BOOTRSTRAP_SERVER}
+      - "${ADMINER_PORT}"
     networks:
       - backend
 
   webserver:
     image: nginx:1.15.12-alpine
     container_name: webserver
-    restart: always
+    restart: unless-stopped
     volumes:
       - ./nginx/conf.d:/etc/nginx/conf.d
       - ./certbot/conf:/etc/nginx/ssl
@@ -217,15 +224,8 @@ services:
     environment:
       - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      -
 
 networks:
   backend:
     driver: bridge
-
-# todo kafka topics
-# https://docs.docker.com/compose/compose-file/compose-file-v3/#healthcheck
-# for better waiting
-# processed <-> aggregated need same amount of partitions for faust to work
-#
-# topicname:partition:replica
-# "events_unlinked:1:1, events_unlinked-discussed:3:1, events_unlinked-crossref:3:1, events_linked:1:1, events_linked-discussed:3:1, events_unknown:3:1, events_processed:1:1, events_processed-discussed:3:1, events_aggregated:1:1"
