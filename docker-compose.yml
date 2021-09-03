@@ -33,7 +33,7 @@ services:
 
   mongo_db:
     image: mongo
-    container_name: mongo-db
+    container_name: mongo_db
     ports:
       - "${MONGO_PORT}"
     environment:
