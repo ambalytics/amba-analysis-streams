@@ -27,3 +27,14 @@ Generic Stream Processing Framework for processing of Events related to scientif
 2. Make sure ports 80 and 443 are free.
 3. Optionally, get SSL certs first: comment out certbot:command in docker-compose.yml, then run `docker-compose up --no-deps certbot`
 4. Run the stack (comment out certbot:command to prevent log spam): `docker-compose up`
+
+## Update a container while keeping the rest running
+0. merge into master and make sure the packaging was successful
+1. `docker pull <container source>`
+2. `docker-compose up -d --no-deps --build <container name>`
+
+Example perculator:
+```
+ docker pull ghcr.io/ambalytics/amba-analysis-worker-perculator/amba-analysis-worker-perculator:latest
+ docker-compose up -d --no-deps --build twitter-perculator
+```
