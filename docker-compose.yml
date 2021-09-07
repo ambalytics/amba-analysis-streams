@@ -1,23 +1,28 @@
 ---
 #name: amba-analysis-stream
+version: "3"
 
 services:
   zookeeper:
     image: wurstmeister/zookeeper
     container_name: zookeeper
-    restart: unless-stopped
+    restart: always
     hostname: zookeeper
+#    ports:
+#      - "2181:2181"
     networks:
-      - backend
+      - ambaanalysisnet
 
 
   kafka:
     image: wurstmeister/kafka:latest
     container_name: kafka
-    restart: unless-stopped
     depends_on:
       - zookeeper
+#    ports:
+#      - "9092:9092"
     hostname: kafka
+    restart: always
     links:
       - zookeeper
     environment:
@@ -28,68 +33,63 @@ services:
       KAFKA_ADVERTISED_PORT: "${KAFKA_ADVERTISED_PORT}"
       KAFKA_ADVERTISED_LISTENERS: "${KAFKA_ADVERTISED_LISTENERS_PREFIX}${KAFKA_BOOTRSTRAP_SERVER}"
     networks:
-      - backend
+      - ambaanalysisnet
 
-  connector_twitter:
-    image: connector_twitter
-    container_name: connector_twitter
-    restart: unless-stopped
+  connector-twitter:
+    image: ghcr.io/ambalytics/amba-connector-twitter/amba-connector-twitter:latest
+    container_name: connector-twitter
     depends_on:
       - kafka
+    restart: always
     environment:
       KAFKA_BOOTRSTRAP_SERVER: ${KAFKA_BOOTRSTRAP_SERVER}
-      BERARER_TOKEN: ${TWITTER_BEARER_TOKEN}
+      TWITTER_BEARER_TOKEN: ${TWITTER_BEARER_TOKEN}
     networks:
-      - backend
+      - ambaanalysisnet
 
-  perculator:
-    image: perculator
-    container_name: perculator
-    deploy:
-      resources:
-        limits:
-          cpus: '0.50'
-          memory: 1G
-        reservations:
-          cpus: '0.25'
-          memory: 100M
-    restart: unless-stopped
+  twitter-perculator:
+    image: ghcr.io/ambalytics/amba-analysis-worker-perculator/amba-analysis-worker-perculator:latest
+    container_name: twitter-perculator
     depends_on:
-      - connector_twitter
+      - kafka
+      - connector-twitter
+      - postgres
+      - mongo-db
+    restart: always
     environment:
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_DB: ${POSTGRES_DB}
+      MONGO_HOST: ${MONGO_HOST}
+      MONGO_PORT: ${MONGO_PORT}
+      MONGO_DB: ${MONGO_DB}
       POSTGRES_HOST: ${POSTGRES_HOST}
       POSTGRES_PORT: ${POSTGRES_PORT}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       KAFKA_BOOTRSTRAP_SERVER: ${KAFKA_BOOTRSTRAP_SERVER}
     networks:
-      - backend
+      - ambaanalysisnet
 
-  worker_twitter:
-    image: worker_twitter
-    container_name: worker_twitter
-    deploy:
-      resources:
-        limits:
-          cpus: '0.50'
-          memory: 1G
-        reservations:
-          cpus: '0.25'
-          memory: 100M
-    restart: unless-stopped
+  worker-twitter:
+    image: ghcr.io/ambalytics/amba-analysis-worker-discussion/amba-analysis-worker-twitter:latest
+    container_name: worker-twitter
     depends_on:
-      - connector_twitter
+      - kafka
+      - connector-twitter
+      - postgres
+    restart: always
     environment:
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_HOST: ${POSTGRES_HOST}
       POSTGRES_PORT: ${POSTGRES_PORT}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       KAFKA_BOOTRSTRAP_SERVER: ${KAFKA_BOOTRSTRAP_SERVER}
     networks:
-      - backend
+      - ambaanalysisnet
 
+  worker-pubfinder: # --build for restart
+    image: ghcr.io/ambalytics/amba-analysis-worker-pubfinder/amba-analysis-worker-pubfinder:latest
+    container_name: worker-pubfinder
   worker_pubfinder: # --build for restart
     image: worker_pubfinder # -t for building
     container_name: worker_pubfinder
@@ -102,73 +102,114 @@ services:
     restart: unless-stopped
     depends_on:
       - kafka
+      - postgres
+      - mongo-db
+    restart: always
     environment:
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_DB: ${POSTGRES_DB}
+      MONGO_HOST: ${MONGO_HOST}
+      MONGO_PORT: ${MONGO_PORT}
+      MONGO_DB: ${MONGO_DB}
       POSTGRES_HOST: ${POSTGRES_HOST}
       POSTGRES_PORT: ${POSTGRES_PORT}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       KAFKA_BOOTRSTRAP_SERVER: ${KAFKA_BOOTRSTRAP_SERVER}
     networks:
-      - backend
+      - ambaanalysisnet
 
   aggregator:
-    image: aggregator
+    image: ghcr.io/ambalytics/amba-analysis-worker-aggregator/amba-analysis-worker-aggregator:latest
     container_name: aggregator
-    restart: unless-stopped
     depends_on:
       - kafka
+    restart: always
     environment:
       KAFKA_BOOTRSTRAP_SERVER: ${KAFKA_BOOTRSTRAP_SERVER}
     networks:
-      - backend
+      - ambaanalysisnet
 
-  api:
-    image: api
-    container_name: api
-    restart: unless-stopped
-    ports:
-      - "${API_PORT}"
-    depends_on:
-      - kafka
+  mongo-db:
+    image: mongo:5.0.2
+    container_name: mongo-db
+    #ports:
+    #  - "27017:27017"
+    restart: always
     environment:
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_HOST: ${POSTGRES_HOST}
-      POSTGRES_PORT: ${POSTGRES_PORT}
-      KAFKA_BOOTRSTRAP_SERVER: ${KAFKA_BOOTRSTRAP_SERVER}
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGO_DB}
     networks:
-      - backend
-
+      - ambaanalysisnet
+  #    volumes:
+  #        - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
 
   postgres:
     image: postgres
-    restart: unless-stopped
+    restart: always
     container_name: postgres
     environment:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_DB: ${POSTGRES_DB}
-    ports:
-      - "${POSTGRES_PORT}:${POSTGRES_PORT}"
+    #ports:
+    #  - "5432:5432"
     networks:
-      - backend
+      - ambaanalysisnet
     volumes:
-      - ./db:/docker-entrypoint-initdb.d/
+      - ./postgres/initdb.d:/docker-entrypoint-initdb.d/
 
-  adminer:
-    image: adminer
-    container_name: adminer
-    restart: unless-stopped
-    ports:
-      - "${ADMINER_PORT}"
+  api:
+    image: ghcr.io/ambalytics/amba-analysis-streams-api/amba-analysis-streams-api:latest
+    container_name: api
+    #ports: does not need to be exposed
+    #  - "8080:80"
+    depends_on:
+      - kafka
+      - postgres
+    restart: always
+    environment:
+      POSTGRES_HOST: ${POSTGRES_HOST}
+      POSTGRES_PORT: ${POSTGRES_PORT}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      KAFKA_BOOTRSTRAP_SERVER: ${KAFKA_BOOTRSTRAP_SERVER}
     networks:
-      - backend
+      - ambaanalysisnet
+
+  webserver:
+    image: nginx:1.15.12-alpine
+    container_name: webserver
+    restart: always
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./certbot/conf:/etc/nginx/ssl
+      - ./certbot/data:/var/www/certbot
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      - PHP_MEMORY_LIMIT=256M
+    networks:
+      - ambaanalysisnet
+
+  certbot:
+    depends_on:
+      - webserver
+    image: certbot/dns-route53:latest
+    container_name: certbot
+    volumes:
+      # we save our directory of keys on our host server
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/logs:/var/log/letsencrypt
+    # command: certonly --dns-route53 --email it@ambalytics.com --agree-tos --no-eff-email -d api-analysis.ambalytics.com
+    environment:
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
 
 networks:
-  backend:
-    driver: bridge
+  ambaanalysisnet:
 
 # todo kafka topics
 # https://docs.docker.com/compose/compose-file/compose-file-v3/#healthcheck

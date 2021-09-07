@@ -1,3 +1,7 @@
+certbot/data
+
+.env
+
 # Compiled class file
 *.class
 
