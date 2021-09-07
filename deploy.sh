@@ -10,7 +10,7 @@ docker-compose down --volumes --remove-orphans
 # pull images
 docker pull ghcr.io/ambalytics/amba-connector-twitter/amba-connector-twitter:latest
 docker pull ghcr.io/ambalytics/amba-analysis-worker-perculator/amba-analysis-worker-perculator:latest
-docker pull ghcr.io/ambalytics/amba-analysis-worker-discussion/amba-analysis-worker-twitter:latest
+docker pull ghcr.io/ambalytics/amba-analysis-worker-discussion/amba-analysis-worker-discussion:latest
 docker pull ghcr.io/ambalytics/amba-connector-mongodb/amba-connector-mongodb:latest
 docker pull ghcr.io/ambalytics/amba-analysis-worker-pubfinder/amba-analysis-worker-pubfinder:latest
 docker pull ghcr.io/ambalytics/amba-analysis-streams-api/amba-analysis-streams-api:latest
