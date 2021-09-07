@@ -20,10 +20,6 @@ Generic Stream Processing Framework for processing of Events related to scientif
 | POSTGRES_DB | amba | |
 | POSTGRES_USER | streams | |
 | POSTGRES_PASSWORD | postgres | REPLACE_ME |
-| MONGO_USERNAME | root | |
-| MONGO_PASSWORD | postgres | example |
-| MONGO_DB | postgres | events |
-| MONGO_PORT | 27017 | |
 | TWITTER_BEARER_TOKEN | - (omitted for security) | see developer.twitter.com |
 | AWS_ACCESS_KEY_ID | - (omitted for security) | this is for certbot SSL DNS auth with Route53 |
 | AWS_SECRET_ACCESS_KEY | - (omitted for security) | this is for certbot SSL DNS auth with Route53 |
