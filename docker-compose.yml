@@ -30,23 +30,6 @@ services:
     networks:
       - backend
 
-
-  mongo_db:
-    image: mongo
-    container_name: mongo_db
-    ports:
-      - "${MONGO_PORT}"
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
-      MONGO_INITDB_DATABASE: ${MONGO_INITDB_DATABASE}
-    networks:
-      - backend
-
-#    volumes:
-#        - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
-# create this file temporary during github workflow
-
   connector_twitter:
     image: connector_twitter
     container_name: connector_twitter
@@ -106,17 +89,6 @@ services:
       KAFKA_BOOTRSTRAP_SERVER: ${KAFKA_BOOTRSTRAP_SERVER}
     networks:
       - backend
-
-# only for debug, mongo only left for publications at the moment
-#  connector_mongodb:
-#    image: mongodb-connector
-#    container_name: mongodb-connector
-#    depends_on:
-#      - mongo_db
-#    environment:
-#      KAFKA_BOOTRSTRAP_SERVER: ${KAFKA_BOOTRSTRAP_SERVER}
-#    networks:
-#      - backend
 
   worker_pubfinder: # --build for restart
     image: worker_pubfinder # -t for building
