@@ -64,9 +64,9 @@ services:
     networks:
       - ambaanalysisnet
 
-  worker-twitter:
-    image: ghcr.io/ambalytics/amba-analysis-worker-discussion/amba-analysis-worker-twitter:latest
-    container_name: worker-twitter
+  worker-discussion:
+    image: ghcr.io/ambalytics/amba-analysis-worker-discussion/amba-analysis-worker-discussion:latest
+    container_name: worker-discussion
     depends_on:
       - kafka
       - connector-twitter
