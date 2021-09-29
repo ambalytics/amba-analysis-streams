@@ -87,6 +87,10 @@ services:
       POSTGRES_HOST: ${POSTGRES_HOST}
       POSTGRES_PORT: ${POSTGRES_PORT}
       KAFKA_BOOTRSTRAP_SERVER: ${KAFKA_BOOTRSTRAP_SERVER}
+      INFLUXDB_TOKEN: ${INFLUXDB_TOKEN}
+      INFLUXDB_ORG: ${INFLUXDB_ORG}
+      INFLUXDB_BUCKET: ${INFLUXDB_BUCKET}
+      INFLUXDB_PORT: ${INFLUXDB_PORT}
     networks:
       - backend
 
@@ -115,13 +119,20 @@ services:
   aggregator:
     image: aggregator
     container_name: aggregator
-    restart: unless-stopped
+#    restart: unless-stopped
     depends_on:
       - kafka
     environment:
       KAFKA_BOOTRSTRAP_SERVER: ${KAFKA_BOOTRSTRAP_SERVER}
+      INFLUXDB_V2_TOKEN: ${INFLUXDB_TOKEN}
+      INFLUXDB_V2_ORG: ${INFLUXDB_ORG}
+      INFLUXDB_V2_URL: 'http://influxdb:8086'
+      INFLUXDB_V2_TIMEOUT: 60000
+      INFLUXDB_BUCKET: ${INFLUXDB_BUCKET}
+      INFLUXDB_PORT: ${INFLUXDB_PORT}
     networks:
       - backend
+
 
   api:
     image: api
@@ -138,6 +149,11 @@ services:
       POSTGRES_HOST: ${POSTGRES_HOST}
       POSTGRES_PORT: ${POSTGRES_PORT}
       KAFKA_BOOTRSTRAP_SERVER: ${KAFKA_BOOTRSTRAP_SERVER}
+      INFLUXDB_V2_TOKEN: ${INFLUXDB_TOKEN}
+      INFLUXDB_V2_ORG: ${INFLUXDB_ORG}
+      INFLUXDB_V2_URL: 'http://influxdb:8086'
+      INFLUXDB_BUCKET: ${INFLUXDB_BUCKET}
+      INFLUXDB_PORT: ${INFLUXDB_PORT}
     networks:
       - backend
 
@@ -163,6 +179,22 @@ services:
     restart: unless-stopped
     ports:
       - "${ADMINER_PORT}"
+    networks:
+      - backend
+
+  influxdb:
+    image: influxdb:2.0.8
+    container_name: influxdb
+    restart: unless-stopped
+    ports:
+      - "${INFLUXDB_PORT}:${INFLUXDB_PORT}"
+    environment:
+      DOCKER_INFLUXDB_INIT_MODE: "setup"
+      DOCKER_INFLUXDB_INIT_USERNAME: ${INFLUXDB_USER}
+      DOCKER_INFLUXDB_INIT_PASSWORD: ${INFLUXDB_PASSWORD}
+      DOCKER_INFLUXDB_INIT_ORG: ${INFLUXDB_ORG}
+      DOCKER_INFLUXDB_INIT_BUCKET: ${INFLUXDB_BUCKET}
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: ${INFLUXDB_TOKEN}
     networks:
       - backend
 
