@@ -73,7 +73,6 @@ services:
     depends_on:
       - kafka
       - postgres
-      - influxdb
     restart: unless-stopped
     environment:
       POSTGRES_HOST: ${POSTGRES_HOST}
@@ -82,10 +81,6 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       KAFKA_BOOTRSTRAP_SERVER: ${KAFKA_BOOTRSTRAP_SERVER}
-      INFLUXDB_TOKEN: ${INFLUXDB_TOKEN}
-      INFLUXDB_ORG: ${INFLUXDB_ORG}
-      INFLUXDB_BUCKET: ${INFLUXDB_BUCKET}
-      INFLUXDB_PORT: ${INFLUXDB_PORT}
       SENTRY_DSN: 'https://a6c6f9c04b38487e8d85f2b0e22cb7df@apm.ambalytics.com/7'
       SENTRY_TRACES_SAMPLE_RATE: 1.0
     networks:
@@ -120,6 +115,11 @@ services:
     restart: unless-stopped
     environment:
       KAFKA_BOOTRSTRAP_SERVER: ${KAFKA_BOOTRSTRAP_SERVER}
+      POSTGRES_HOST: ${POSTGRES_HOST}
+      POSTGRES_PORT: ${POSTGRES_PORT}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       INFLUXDB_V2_TOKEN: ${INFLUXDB_TOKEN}
       INFLUXDB_V2_ORG: ${INFLUXDB_ORG}
       INFLUXDB_V2_URL: 'http://influxdb:8086'
