@@ -39,6 +39,8 @@ services:
     environment:
       KAFKA_BOOTRSTRAP_SERVER: ${KAFKA_BOOTRSTRAP_SERVER}
       TWITTER_BEARER_TOKEN: ${TWITTER_BEARER_TOKEN}
+      SENTRY_DSN: 'https://36b75f4025a54ef1ade6069d311dc0c1@apm.ambalytics.com/8'
+      SENTRY_TRACES_SAMPLE_RATE: 1.0
     networks:
       - backend
 
@@ -63,6 +65,8 @@ services:
       POSTGRES_HOST: ${POSTGRES_HOST}
       POSTGRES_PORT: ${POSTGRES_PORT}
       KAFKA_BOOTRSTRAP_SERVER: ${KAFKA_BOOTRSTRAP_SERVER}
+      SENTRY_DSN: 'https://ce9c4c51fbe842cca7c8736cc33e50b6@apm.ambalytics.com/9'
+      SENTRY_TRACES_SAMPLE_RATE: 1.0
     networks:
       - backend
 
@@ -91,6 +95,8 @@ services:
       INFLUXDB_ORG: ${INFLUXDB_ORG}
       INFLUXDB_BUCKET: ${INFLUXDB_BUCKET}
       INFLUXDB_PORT: ${INFLUXDB_PORT}
+      SENTRY_DSN: 'https://a6c6f9c04b38487e8d85f2b0e22cb7df@apm.ambalytics.com/7'
+      SENTRY_TRACES_SAMPLE_RATE: 1.0
     networks:
       - backend
 
@@ -113,6 +119,8 @@ services:
       POSTGRES_HOST: ${POSTGRES_HOST}
       POSTGRES_PORT: ${POSTGRES_PORT}
       KAFKA_BOOTRSTRAP_SERVER: ${KAFKA_BOOTRSTRAP_SERVER}
+      SENTRY_DSN: 'https://f0dfcffd7b53402eb4733e76dad63212@apm.ambalytics.com/10'
+      SENTRY_TRACES_SAMPLE_RATE: 1.0
     networks:
       - backend
 
@@ -130,6 +138,8 @@ services:
       INFLUXDB_V2_TIMEOUT: 60000
       INFLUXDB_BUCKET: ${INFLUXDB_BUCKET}
       INFLUXDB_PORT: ${INFLUXDB_PORT}
+      SENTRY_DSN: 'https://87d01729e9be480c8d9b80a8a4d57f58@apm.ambalytics.com/12'
+      SENTRY_TRACES_SAMPLE_RATE: 1.0
     networks:
       - backend
 
@@ -154,6 +164,8 @@ services:
       INFLUXDB_V2_URL: 'http://influxdb:8086'
       INFLUXDB_BUCKET: ${INFLUXDB_BUCKET}
       INFLUXDB_PORT: ${INFLUXDB_PORT}
+      SENTRY_DSN: 'https://8f472f79cae545f9994a56a0e0bebf1c@apm.ambalytics.com/11'
+      SENTRY_TRACES_SAMPLE_RATE: 1.0
     networks:
       - backend
 

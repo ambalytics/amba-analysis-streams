@@ -1,6 +1,6 @@
 -- SQL dump generated using DBML (dbml-lang.org)
 -- Database: PostgreSQL
--- Generated at: 2021-09-19T15:06:01.571Z
+-- Generated at: 2021-10-04T08:00:04.068Z
 
 CREATE TYPE "publication_type" AS ENUM (
   'UNKNOWN',
@@ -68,8 +68,7 @@ CREATE TABLE "publication_author" (
 CREATE TABLE "field_of_study" (
   "id" BIGSERIAL PRIMARY KEY,
   "name" varchar,
-  "normalized_name" varchar,
-  "level" int
+  "normalized_name" varchar
 );
 
 CREATE TABLE "publication_field_of_study" (
@@ -78,120 +77,55 @@ CREATE TABLE "publication_field_of_study" (
   PRIMARY KEY ("publication_doi", "field_of_study_id")
 );
 
-CREATE TABLE "field_of_study_children" (
-  "field_of_study_id" bigint,
-  "child_field_of_study_id" bigint,
-  PRIMARY KEY ("field_of_study_id", "child_field_of_study_id")
+CREATE TABLE "publication_not_found" (
+  "publication_doi" varchar PRIMARY KEY,
+  "last_try" datetime
+  "pub_missing" varchar
 );
 
-CREATE TABLE "discussion_entity" (
+CREATE TABLE "discussion_data" (
   "id" BIGSERIAL PRIMARY KEY,
-  "entity" varchar
-);
-
-CREATE TABLE "discussion_entity_data" (
-  "publication_doi" varchar,
-  "discussion_entity_id" bigint,
-  "count" int,
-  PRIMARY KEY ("publication_doi", "discussion_entity_id")
-);
-
-CREATE TABLE "discussion_hashtag" (
-  "id" BIGSERIAL PRIMARY KEY,
-  "hashtag" varchar
-);
-
-CREATE TABLE "discussion_hashtag_data" (
-  "publication_doi" varchar,
-  "discussion_hashtag_id" bigint,
-  "count" int,
-  PRIMARY KEY ("publication_doi", "discussion_hashtag_id")
-);
-
-CREATE TABLE "discussion_word" (
-  "id" BIGSERIAL PRIMARY KEY,
-  "word" varchar
-);
-
-CREATE TABLE "discussion_word_data" (
-  "publication_doi" varchar,
-  "discussion_word_id" bigint,
-  "count" int,
-  PRIMARY KEY ("publication_doi", "discussion_word_id")
-);
-
-CREATE TABLE "discussion_location" (
-  "id" BIGSERIAL PRIMARY KEY,
-  "location" varchar
-);
-
-CREATE TABLE "discussion_location_data" (
-  "publication_doi" varchar,
-  "discussion_location_id" bigint,
-  "count" int,
-  PRIMARY KEY ("publication_doi", "discussion_location_id")
-);
-
-CREATE TABLE "discussion_author" (
-  "id" BIGSERIAL PRIMARY KEY,
-  "author" varchar
-);
-
-CREATE TABLE "discussion_author_data" (
-  "publication_doi" varchar,
-  "discussion_author_id" bigint,
-  "count" int,
-  PRIMARY KEY ("publication_doi", "discussion_author_id")
-);
-
-CREATE TABLE "discussion_lang" (
-  "id" BIGSERIAL PRIMARY KEY,
-  "lang" varchar
-);
-
-CREATE TABLE "discussion_lang_data" (
-  "publication_doi" varchar,
-  "discussion_lang_id" bigint,
-  "count" int,
-  PRIMARY KEY ("publication_doi", "discussion_lang_id")
-);
-
-CREATE TABLE "discussion_type" (
-  "id" BIGSERIAL PRIMARY KEY,
+  "value" varchar,
   "type" varchar
 );
 
-CREATE TABLE "discussion_type_data" (
+CREATE TABLE "discussion_data_point" (
   "publication_doi" varchar,
-  "discussion_type_id" bigint,
+  "discussion_data_point_id" bigint,
   "count" int,
-  PRIMARY KEY ("publication_doi", "discussion_type_id")
+  PRIMARY KEY ("publication_doi", "discussion_data_point_id")
 );
 
-CREATE TABLE "discussion_source" (
+CREATE TABLE "discussion_newest_subj" (
   "id" BIGSERIAL PRIMARY KEY,
-  "source" varchar
-);
-
-CREATE TABLE "discussion_source_data" (
+  "type" varchar,
   "publication_doi" varchar,
-  "discussion_source_id" bigint,
-  "count" int,
-  PRIMARY KEY ("publication_doi", "discussion_source_id")
+  "sub_id" varchar,
+  "created_at" datetime,
+  "score" float,
+  "bot_rating" float,
+  "followers" int,
+  "sentiment_raw" float,
+  "contains_abstract_raw" float,
+  "lang" varchar,
+  "location" varchar,
+  "source" varchar,
+  "subj_type" varchar,
+  "question_mark_count" int,
+  "exclamation_mark_count" int,
+  "length" int,
+  "entities" json
 );
 
 CREATE TABLE "trending" (
   "id" BIGSERIAL PRIMARY KEY,
   "publication_doi" varchar,
-  "duration" int,
+  "duration" str,
   "score" float,
   "count" int,
   "median_sentiment" float,
-  "sum_follower" int,
+  "sum_followers" int,
   "abstract_difference" float,
-  "tweet_author_eveness" float,
-  "lang_eveness" float,
-  "location_eveness" float,
   "median_age" float,
   "median_length" float,
   "mean_questions" float,
@@ -203,7 +137,7 @@ CREATE TABLE "trending" (
   "kama" float,
   "ker" float,
   "mean_score" float,
-  "stddev" float,
+  "stddev" float
 );
 
 ALTER TABLE "publication_citation" ADD FOREIGN KEY ("publication_doi") REFERENCES "publication" ("doi");
@@ -226,43 +160,25 @@ ALTER TABLE "publication_field_of_study" ADD FOREIGN KEY ("publication_doi") REF
 
 ALTER TABLE "publication_field_of_study" ADD FOREIGN KEY ("field_of_study_id") REFERENCES "field_of_study" ("id");
 
-ALTER TABLE "field_of_study_children" ADD FOREIGN KEY ("field_of_study_id") REFERENCES "field_of_study" ("id");
+ALTER TABLE "discussion_data_point" ADD FOREIGN KEY ("publication_doi") REFERENCES "publication" ("doi");
 
-ALTER TABLE "field_of_study_children" ADD FOREIGN KEY ("child_field_of_study_id") REFERENCES "field_of_study" ("id");
+ALTER TABLE "discussion_data_point" ADD FOREIGN KEY ("discussion_data_point_id") REFERENCES "discussion_data" ("id");
 
-ALTER TABLE "discussion_entity_data" ADD FOREIGN KEY ("publication_doi") REFERENCES "publication" ("doi");
-
-ALTER TABLE "discussion_entity_data" ADD FOREIGN KEY ("discussion_entity_id") REFERENCES "discussion_entity" ("id");
-
-ALTER TABLE "discussion_hashtag_data" ADD FOREIGN KEY ("publication_doi") REFERENCES "publication" ("doi");
-
-ALTER TABLE "discussion_hashtag_data" ADD FOREIGN KEY ("discussion_hashtag_id") REFERENCES "discussion_hashtag" ("id");
-
-ALTER TABLE "discussion_word_data" ADD FOREIGN KEY ("publication_doi") REFERENCES "publication" ("doi");
-
-ALTER TABLE "discussion_word_data" ADD FOREIGN KEY ("discussion_word_id") REFERENCES "discussion_word" ("id");
-
-ALTER TABLE "discussion_location_data" ADD FOREIGN KEY ("publication_doi") REFERENCES "publication" ("doi");
-
-ALTER TABLE "discussion_location_data" ADD FOREIGN KEY ("discussion_location_id") REFERENCES "discussion_location" ("id");
-
-ALTER TABLE "discussion_author_data" ADD FOREIGN KEY ("publication_doi") REFERENCES "publication" ("doi");
-
-ALTER TABLE "discussion_author_data" ADD FOREIGN KEY ("discussion_author_id") REFERENCES "discussion_author" ("id");
-
-ALTER TABLE "discussion_lang_data" ADD FOREIGN KEY ("publication_doi") REFERENCES "publication" ("doi");
-
-ALTER TABLE "discussion_lang_data" ADD FOREIGN KEY ("discussion_lang_id") REFERENCES "discussion_lang" ("id");
-
-ALTER TABLE "discussion_type_data" ADD FOREIGN KEY ("publication_doi") REFERENCES "publication" ("doi");
-
-ALTER TABLE "discussion_type_data" ADD FOREIGN KEY ("discussion_type_id") REFERENCES "discussion_type" ("id");
-
-ALTER TABLE "discussion_source_data" ADD FOREIGN KEY ("publication_doi") REFERENCES "publication" ("doi");
-
-ALTER TABLE "discussion_source_data" ADD FOREIGN KEY ("discussion_source_id") REFERENCES "discussion_source" ("id");
+ALTER TABLE "discussion_newest_subj" ADD FOREIGN KEY ("publication_doi") REFERENCES "publication" ("doi");
 
 ALTER TABLE "trending" ADD FOREIGN KEY ("publication_doi") REFERENCES "publication" ("doi");
 
+CREATE INDEX ON "publication" ("doi");
+
+CREATE INDEX ON "discussion_data" ("type");
+
+create index trending_publication_doi_duration_index
+	on trending (publication_doi, duration);
+
+create index discussion_newest_subj_created_at_index
+    on discussion_newest_subj (created_at);
+
+create index discussion_newest_subj_publication_doi_index
+    on discussion_newest_subj (publication_doi);
 
 COMMENT ON COLUMN "publication"."id" IS 'start with high value';
