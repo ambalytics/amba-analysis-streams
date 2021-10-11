@@ -42,4 +42,3 @@ Example perculator:
 ```
  docker pull ghcr.io/ambalytics/amba-analysis-worker-perculator/amba-analysis-worker-perculator:latest
  docker-compose up -d --no-deps --build twitter-perculator
-```
