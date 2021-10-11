@@ -1,6 +1,6 @@
 -- SQL dump generated using DBML (dbml-lang.org)
 -- Database: PostgreSQL
--- Generated at: 2021-08-31T13:44:27.861Z
+-- Generated at: 2021-10-04T08:00:04.068Z
 
 CREATE TYPE "publication_type" AS ENUM (
   'UNKNOWN',
@@ -15,175 +15,170 @@ CREATE TYPE "publication_type" AS ENUM (
   'THESIS'
 );
 
-CREATE TABLE "Publication" (
+CREATE TABLE "publication" (
   "id" BIGSERIAL PRIMARY KEY,
   "doi" varchar UNIQUE NOT NULL,
   "type" publication_type,
-  "pubDate" varchar,
+  "pub_date" varchar,
   "year" int,
   "publisher" varchar,
-  "citationCount" int,
+  "citation_count" int,
   "title" varchar,
-  "normalizedTitle" varchar,
+  "normalized_title" varchar,
   "abstract" text
 );
 
-CREATE TABLE "Source" (
+CREATE TABLE "publication_citation" (
+  "publication_doi" varchar,
+  "citation_doi" varchar,
+  PRIMARY KEY ("publication_doi", "citation_doi")
+);
+
+CREATE TABLE "publication_reference" (
+  "publication_doi" varchar,
+  "reference_doi" varchar,
+  PRIMARY KEY ("publication_doi", "reference_doi")
+);
+
+CREATE TABLE "source" (
   "id" BIGSERIAL PRIMARY KEY,
   "title" varchar,
   "url" varchar,
   "license" varchar
 );
 
-CREATE TABLE "FieldOfStudy" (
+CREATE TABLE "publication_source" (
+  "publication_doi" varchar,
+  "source_id" bigint,
+  PRIMARY KEY ("publication_doi", "source_id")
+);
+
+CREATE TABLE "author" (
   "id" BIGSERIAL PRIMARY KEY,
   "name" varchar,
-  "normalizedName" varchar,
-  "level" int
+  "normalized_name" varchar
 );
 
-CREATE TABLE "Author" (
+CREATE TABLE "publication_author" (
+  "publication_doi" varchar,
+  "author_id" bigint,
+  PRIMARY KEY ("publication_doi", "author_id")
+);
+
+CREATE TABLE "field_of_study" (
   "id" BIGSERIAL PRIMARY KEY,
   "name" varchar,
-  "normalizedName" varchar
+  "normalized_name" varchar
 );
 
-CREATE TABLE "PublicationCitation" (
-  "publicationDoi" varchar NOT NULL,
-  "citationId" varchar NOT NULL,
-  PRIMARY KEY ("publicationDoi", "citationId")
+CREATE TABLE "publication_field_of_study" (
+  "publication_doi" varchar,
+  "field_of_study_id" bigint,
+  PRIMARY KEY ("publication_doi", "field_of_study_id")
 );
 
-CREATE TABLE "PublicationReference" (
-  "publicationDoi" varchar NOT NULL,
-  "referenceId" varchar NOT NULL,
-  PRIMARY KEY ("publicationDoi", "referenceId")
+CREATE TABLE "publication_not_found" (
+  "publication_doi" varchar PRIMARY KEY,
+  "last_try" datetime
+  "pub_missing" varchar
 );
 
-CREATE TABLE "PublicationFieldOfStudy" (
-  "publicationDoi" varchar NOT NULL,
-  "fieldOfStudyId" bigint NOT NULL,
-  PRIMARY KEY ("publicationDoi", "fieldOfStudyId")
-);
-
-CREATE TABLE "PublicationAuthor" (
-  "publicationDoi" varchar NOT NULL,
-  "authorId" bigint NOT NULL,
-  PRIMARY KEY ("publicationDoi", "authorId")
-);
-
-CREATE TABLE "PublicationSource" (
-  "publicationDoi" varchar NOT NULL,
-  "sourceId" bigint NOT NULL,
-  PRIMARY KEY ("publicationDoi", "sourceId")
-);
-
-CREATE TABLE "DiscussionData" (
+CREATE TABLE "discussion_data" (
   "id" BIGSERIAL PRIMARY KEY,
-  "publicationDoi" varchar,
-  "createdAt" timestamp,
-  "score" float,
-  "timeScore" float,
-  "typeScore" float,
-  "userScore" float,
-  "language" varchar,
-  "source" varchar,
-  "abstractDifference" float,
-  "length" int,
-  "questions" int,
-  "exclamations" int,
-  "type" varchar,
-  "sentiment" float,
-  "subjId" bigint,
-  "followers" int,
-  "botScore" float,
-  "authorName" varchar,
-  "authorLocation" varchar,
-  "sourceId" varchar
+  "value" varchar,
+  "type" varchar
 );
 
-CREATE TABLE "DiscussionEntity" (
-  "id" BIGSERIAL PRIMARY KEY,
-  "entity" varchar
-);
-
-CREATE TABLE "DiscussionHashtag" (
-  "id" BIGSERIAL PRIMARY KEY,
-  "hashtag" varchar
-);
-
-CREATE TABLE "DiscussionWord" (
-  "id" BIGSERIAL PRIMARY KEY,
-  "word" varchar
-);
-
-CREATE TABLE "DiscussionAuthor" (
-  "id" BIGSERIAL PRIMARY KEY,
-  "name" varchar
-);
-
-CREATE TABLE "DiscussionEntityData" (
-  "discussionDataId" bigint NOT NULL,
-  "discussionEntityId" bigint NOT NULL,
-  PRIMARY KEY ("discussionDataId", "discussionEntityId")
-);
-
-CREATE TABLE "DiscussionAuthorData" (
-  "discussionDataId" bigint NOT NULL,
-  "discussionAuthorId" bigint NOT NULL,
-  PRIMARY KEY ("discussionDataId", "discussionAuthorId")
-);
-
-CREATE TABLE "DiscussionWordData" (
-  "discussionDataId" bigint NOT NULL,
-  "discussionWordId" bigint NOT NULL,
+CREATE TABLE "discussion_data_point" (
+  "publication_doi" varchar,
+  "discussion_data_point_id" bigint,
   "count" int,
-  PRIMARY KEY ("discussionDataId", "discussionWordId")
+  PRIMARY KEY ("publication_doi", "discussion_data_point_id")
 );
 
-CREATE TABLE "DiscussionHashtagData" (
-  "discussionDataId" bigint NOT NULL,
-  "discussionHashtagId" bigint NOT NULL,
-  PRIMARY KEY ("discussionDataId", "discussionHashtagId")
+CREATE TABLE "discussion_newest_subj" (
+  "id" BIGSERIAL PRIMARY KEY,
+  "type" varchar,
+  "publication_doi" varchar,
+  "sub_id" varchar,
+  "created_at" datetime,
+  "score" float,
+  "bot_rating" float,
+  "followers" int,
+  "sentiment_raw" float,
+  "contains_abstract_raw" float,
+  "lang" varchar,
+  "location" varchar,
+  "source" varchar,
+  "subj_type" varchar,
+  "question_mark_count" int,
+  "exclamation_mark_count" int,
+  "length" int,
+  "entities" json
 );
 
-ALTER TABLE "PublicationCitation" ADD FOREIGN KEY ("publicationDoi") REFERENCES "Publication" ("doi");
+CREATE TABLE "trending" (
+  "id" BIGSERIAL PRIMARY KEY,
+  "publication_doi" varchar,
+  "duration" str,
+  "score" float,
+  "count" int,
+  "median_sentiment" float,
+  "sum_followers" int,
+  "abstract_difference" float,
+  "median_age" float,
+  "median_length" float,
+  "mean_questions" float,
+  "mean_exclamations" float,
+  "mean_bot_rating" float,
+  "projected_change" float,
+  "trending" float,
+  "ema" float,
+  "kama" float,
+  "ker" float,
+  "mean_score" float,
+  "stddev" float
+);
 
-ALTER TABLE "PublicationCitation" ADD FOREIGN KEY ("citationId") REFERENCES "Publication" ("doi");
+ALTER TABLE "publication_citation" ADD FOREIGN KEY ("publication_doi") REFERENCES "publication" ("doi");
 
-ALTER TABLE "PublicationReference" ADD FOREIGN KEY ("publicationDoi") REFERENCES "Publication" ("doi");
+ALTER TABLE "publication_citation" ADD FOREIGN KEY ("citation_doi") REFERENCES "publication" ("doi");
 
-ALTER TABLE "PublicationReference" ADD FOREIGN KEY ("referenceId") REFERENCES "Publication" ("doi");
+ALTER TABLE "publication_reference" ADD FOREIGN KEY ("publication_doi") REFERENCES "publication" ("doi");
 
-ALTER TABLE "PublicationFieldOfStudy" ADD FOREIGN KEY ("publicationDoi") REFERENCES "Publication" ("doi");
+ALTER TABLE "publication_reference" ADD FOREIGN KEY ("reference_doi") REFERENCES "publication" ("doi");
 
-ALTER TABLE "PublicationFieldOfStudy" ADD FOREIGN KEY ("fieldOfStudyId") REFERENCES "FieldOfStudy" ("id");
+ALTER TABLE "publication_source" ADD FOREIGN KEY ("publication_doi") REFERENCES "publication" ("doi");
 
-ALTER TABLE "PublicationAuthor" ADD FOREIGN KEY ("publicationDoi") REFERENCES "Publication" ("doi");
+ALTER TABLE "publication_source" ADD FOREIGN KEY ("source_id") REFERENCES "source" ("id");
 
-ALTER TABLE "PublicationAuthor" ADD FOREIGN KEY ("authorId") REFERENCES "Author" ("id");
+ALTER TABLE "publication_author" ADD FOREIGN KEY ("publication_doi") REFERENCES "publication" ("doi");
 
-ALTER TABLE "PublicationSource" ADD FOREIGN KEY ("publicationDoi") REFERENCES "Publication" ("doi");
+ALTER TABLE "publication_author" ADD FOREIGN KEY ("author_id") REFERENCES "author" ("id");
 
-ALTER TABLE "PublicationSource" ADD FOREIGN KEY ("sourceId") REFERENCES "Source" ("id");
+ALTER TABLE "publication_field_of_study" ADD FOREIGN KEY ("publication_doi") REFERENCES "publication" ("doi");
 
-ALTER TABLE "DiscussionData" ADD FOREIGN KEY ("publicationDoi") REFERENCES "Publication" ("doi");
+ALTER TABLE "publication_field_of_study" ADD FOREIGN KEY ("field_of_study_id") REFERENCES "field_of_study" ("id");
 
-ALTER TABLE "DiscussionEntityData" ADD FOREIGN KEY ("discussionDataId") REFERENCES "DiscussionData" ("id");
+ALTER TABLE "discussion_data_point" ADD FOREIGN KEY ("publication_doi") REFERENCES "publication" ("doi");
 
-ALTER TABLE "DiscussionEntityData" ADD FOREIGN KEY ("discussionEntityId") REFERENCES "DiscussionEntity" ("id");
+ALTER TABLE "discussion_data_point" ADD FOREIGN KEY ("discussion_data_point_id") REFERENCES "discussion_data" ("id");
 
-ALTER TABLE "DiscussionAuthorData" ADD FOREIGN KEY ("discussionDataId") REFERENCES "DiscussionData" ("id");
+ALTER TABLE "discussion_newest_subj" ADD FOREIGN KEY ("publication_doi") REFERENCES "publication" ("doi");
 
-ALTER TABLE "DiscussionAuthorData" ADD FOREIGN KEY ("discussionAuthorId") REFERENCES "DiscussionAuthor" ("id");
+ALTER TABLE "trending" ADD FOREIGN KEY ("publication_doi") REFERENCES "publication" ("doi");
 
-ALTER TABLE "DiscussionWordData" ADD FOREIGN KEY ("discussionDataId") REFERENCES "DiscussionData" ("id");
+CREATE INDEX ON "publication" ("doi");
 
-ALTER TABLE "DiscussionWordData" ADD FOREIGN KEY ("discussionWordId") REFERENCES "DiscussionWord" ("id");
+CREATE INDEX ON "discussion_data" ("type");
 
-ALTER TABLE "DiscussionHashtagData" ADD FOREIGN KEY ("discussionDataId") REFERENCES "DiscussionData" ("id");
+create index trending_publication_doi_duration_index
+	on trending (publication_doi, duration);
 
-ALTER TABLE "DiscussionHashtagData" ADD FOREIGN KEY ("discussionHashtagId") REFERENCES "DiscussionHashtag" ("id");
+create index discussion_newest_subj_created_at_index
+    on discussion_newest_subj (created_at);
 
+create index discussion_newest_subj_publication_doi_index
+    on discussion_newest_subj (publication_doi);
 
-COMMENT ON COLUMN "Publication"."id" IS 'start with high value';
+COMMENT ON COLUMN "publication"."id" IS 'start with high value';

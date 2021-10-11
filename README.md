@@ -19,8 +19,13 @@ Generic Stream Processing Framework for processing of Events related to scientif
 | POSTGRES_PORT | 5432 | |
 | POSTGRES_DB | amba | |
 | POSTGRES_USER | streams | |
-| POSTGRES_PASSWORD | postgres | REPLACE_ME |
-| TWITTER_BEARER_TOKEN | - (omitted for security) | see developer.twitter.com |
+| POSTGRES_PASSWORD | - (omitted for security) |  |
+| TWITTER_BEARER_TOKEN | - (omitted for security) | see developer.twitter.com | |
+| INFLUXDB_PORT | 8086 | |
+| INFLUXDB_PASSWORD | - (omitted for security) | |
+| INFLUXDB_USER | streams | |
+| INFLUXDB_ORG | ambalytics | |
+| INFLUXDB_BUCKET | history | |
 | AWS_ACCESS_KEY_ID | - (omitted for security) | this is for certbot SSL DNS auth with Route53 |
 | AWS_SECRET_ACCESS_KEY | - (omitted for security) | this is for certbot SSL DNS auth with Route53 |
 
@@ -37,4 +42,3 @@ Example perculator:
 ```
  docker pull ghcr.io/ambalytics/amba-analysis-worker-perculator/amba-analysis-worker-perculator:latest
  docker-compose up -d --no-deps --build twitter-perculator
-```
