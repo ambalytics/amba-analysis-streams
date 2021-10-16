@@ -25,7 +25,8 @@ CREATE TABLE "publication" (
   "citation_count" int,
   "title" varchar,
   "normalized_title" varchar,
-  "abstract" text
+  "abstract" text,
+  "license" varchar
 );
 
 CREATE TABLE "publication_citation" (
@@ -123,11 +124,11 @@ CREATE TABLE "trending" (
   "duration" str,
   "score" float,
   "count" int,
-  "median_sentiment" float,
+  "mean_sentiment" float,
   "sum_followers" int,
   "abstract_difference" float,
-  "median_age" float,
-  "median_length" float,
+  "mean_age" float,
+  "mean_length" float,
   "mean_questions" float,
   "mean_exclamations" float,
   "mean_bot_rating" float,
