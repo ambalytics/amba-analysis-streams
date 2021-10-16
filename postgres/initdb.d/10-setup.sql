@@ -25,7 +25,8 @@ CREATE TABLE "publication" (
   "citation_count" int,
   "title" varchar,
   "normalized_title" varchar,
-  "abstract" text
+  "abstract" text,
+  "license" varchar
 );
 
 CREATE TABLE "publication_citation" (
