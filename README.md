@@ -28,6 +28,10 @@ Generic Stream Processing Framework for processing of Events related to scientif
 | INFLUXDB_BUCKET | history | |
 | AWS_ACCESS_KEY_ID | - (omitted for security) | this is for certbot SSL DNS auth with Route53 |
 | AWS_SECRET_ACCESS_KEY | - (omitted for security) | this is for certbot SSL DNS auth with Route53 |
+| CONSUMER_KEY_TWITTER_BOT | - (omitted for security) | this is for twitterbot |
+| CONSUMER_SECRET_TWITTER_BOT | - (omitted for security) | this is for twitterbot |
+| ACCESS_TOKEN_TWITTER_BOT | - (omitted for security) | this is for twitterbot |
+| ACCESS_TOKEN_SECRET_TWITTER_BOT | - (omitted for security) | this is for twitterbot |
 
 2. Make sure ports 80 and 443 are free.
 3. Optionally, get SSL certs first: comment out certbot:command in docker-compose.yml, then run `docker-compose up --no-deps certbot`
