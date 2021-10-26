@@ -178,7 +178,7 @@ services:
 
 
   influxdb:
-    image: influxdb:2.0.8
+    image: influxdb:2.0.9
     container_name: influxdb
     restart: unless-stopped
     ports:

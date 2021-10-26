@@ -80,7 +80,7 @@ CREATE TABLE "publication_field_of_study" (
 
 CREATE TABLE "publication_not_found" (
   "publication_doi" varchar PRIMARY KEY,
-  "last_try" datetime
+  "last_try" datetime,
   "pub_missing" varchar
 );
 
