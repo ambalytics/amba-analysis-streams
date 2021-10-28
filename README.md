@@ -46,3 +46,13 @@ Example perculator:
 ```
  docker pull ghcr.io/ambalytics/amba-analysis-worker-perculator/amba-analysis-worker-perculator:latest
  docker-compose up -d --no-deps --build twitter-perculator
+```
+
+Helpful commands:
+```
+docker stats   | stats docker
+docker ps -a   | stats about container
+
+df -h          | disk usage
+free           | memory usage
+```
