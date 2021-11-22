@@ -39,8 +39,12 @@ Generic Stream Processing Framework for processing of Events related to scientif
 
 ## Update a container while keeping the rest running
 0. merge into master and make sure the packaging was successful
-1. `docker pull <container source>`
-2. `docker-compose up -d --no-deps --build <container name>`
+1. ```
+    docker pull <container source>
+   ```
+2. ```
+    docker-compose up -d --no-deps --build <container name>
+   ```
 
 Example perculator:
 ```
