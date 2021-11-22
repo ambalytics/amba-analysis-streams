@@ -26,6 +26,7 @@ Generic Stream Processing Framework for processing of Events related to scientif
 | INFLUXDB_USER | streams | |
 | INFLUXDB_ORG | ambalytics | |
 | INFLUXDB_BUCKET | history | |
+| INFLUXDB_TOKEN | - (omitted for security) | this is used to authenticate the aggregator |
 | AWS_ACCESS_KEY_ID | - (omitted for security) | this is for certbot SSL DNS auth with Route53 |
 | AWS_SECRET_ACCESS_KEY | - (omitted for security) | this is for certbot SSL DNS auth with Route53 |
 | CONSUMER_KEY_TWITTER_BOT | - (omitted for security) | this is for twitterbot |
