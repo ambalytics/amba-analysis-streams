@@ -29,21 +29,21 @@ services:
       KAFKA_ADVERTISED_LISTENERS: "${KAFKA_ADVERTISED_LISTENERS_PREFIX}${KAFKA_BOOTRSTRAP_SERVER}"
     networks:
       - backend
-
-  connector_twitter:
-    image: connector_twitter
-    container_name: connector_twitter
-    restart: unless-stopped
-    depends_on:
-      - kafka
-    environment:
-      KAFKA_BOOTRSTRAP_SERVER: ${KAFKA_BOOTRSTRAP_SERVER}
-      TWITTER_BEARER_TOKEN: ${TWITTER_BEARER_TOKEN}
-      SENTRY_DSN: 'https://36b75f4025a54ef1ade6069d311dc0c1@apm.ambalytics.com/8'
-      SENTRY_TRACES_SAMPLE_RATE: 1.0
-    networks:
-      - backend
-
+#
+#  connector_twitter:
+#    image: connector_twitter
+#    container_name: connector_twitter
+#    restart: unless-stopped
+#    depends_on:
+#      - kafka
+#    environment:
+#      KAFKA_BOOTRSTRAP_SERVER: ${KAFKA_BOOTRSTRAP_SERVER}
+#      TWITTER_BEARER_TOKEN: ${TWITTER_BEARER_TOKEN}
+#      SENTRY_DSN: 'https://36b75f4025a54ef1ade6069d311dc0c1@apm.ambalytics.com/8'
+#      SENTRY_TRACES_SAMPLE_RATE: 1.0
+#    networks:
+#      - backend
+#
   perculator:
     image: perculator
     container_name: perculator
@@ -55,9 +55,9 @@ services:
         reservations:
           cpus: '0.25'
           memory: 100M
-    restart: unless-stopped
-    depends_on:
-      - connector_twitter
+#    restart: unless-stopped
+#    depends_on:
+#      - connector_twitter
     environment:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_USER: ${POSTGRES_USER}
@@ -81,12 +81,12 @@ services:
         reservations:
           cpus: '0.25'
           memory: 100M
-    restart: unless-stopped
-    depends_on:
-      - connector_twitter
-      - kafka
-      - postgres
-      - influxdb
+#    restart: unless-stopped
+#    depends_on:
+#      - connector_twitter
+#      - kafka
+#      - postgres
+#      - influxdb
     environment:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_USER: ${POSTGRES_USER}
@@ -108,10 +108,10 @@ services:
           memory: 1G
         reservations:
           memory: 100M
-    restart: unless-stopped
-    depends_on:
-      - kafka
-      - postgres
+#    restart: unless-stopped
+#    depends_on:
+#      - kafka
+#      - postgres
     environment:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_USER: ${POSTGRES_USER}
@@ -123,36 +123,36 @@ services:
       SENTRY_TRACES_SAMPLE_RATE: 1.0
     networks:
       - backend
-
-  aggregator:
-    image: aggregator
-    container_name: aggregator
-#    restart: unless-stopped
-    depends_on:
-      - kafka
-      - postgres
-      - influxdb
-    environment:
-      KAFKA_BOOTRSTRAP_SERVER: ${KAFKA_BOOTRSTRAP_SERVER}
-      POSTGRES_HOST: ${POSTGRES_HOST}
-      POSTGRES_PORT: ${POSTGRES_PORT}
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      INFLUXDB_V2_TOKEN: ${INFLUXDB_TOKEN}
-      INFLUXDB_V2_ORG: ${INFLUXDB_ORG}
-      INFLUXDB_V2_URL: 'http://influxdb:8086'
-      INFLUXDB_V2_TIMEOUT: 60000
-      INFLUXDB_BUCKET: ${INFLUXDB_BUCKET}
-      INFLUXDB_PORT: ${INFLUXDB_PORT}
-      CONSUMER_KEY_TWITTER_BOT: ${CONSUMER_KEY_TWITTER_BOT}
-      CONSUMER_SECRET_TWITTER_BOT: ${CONSUMER_SECRET_TWITTER_BOT}
-      ACCESS_TOKEN_TWITTER_BOT: ${ACCESS_TOKEN_TWITTER_BOT}
-      ACCESS_TOKEN_SECRET_TWITTER_BOT: ${ACCESS_TOKEN_SECRET_TWITTER_BOT}
-      SENTRY_DSN: 'https://87d01729e9be480c8d9b80a8a4d57f58@apm.ambalytics.com/12'
-      SENTRY_TRACES_SAMPLE_RATE: 1.0
-    networks:
-      - backend
+#
+#  aggregator:
+#    image: aggregator
+#    container_name: aggregator
+##    restart: unless-stopped
+#    depends_on:
+#      - kafka
+#      - postgres
+#      - influxdb
+#    environment:
+#      KAFKA_BOOTRSTRAP_SERVER: ${KAFKA_BOOTRSTRAP_SERVER}
+#      POSTGRES_HOST: ${POSTGRES_HOST}
+#      POSTGRES_PORT: ${POSTGRES_PORT}
+#      POSTGRES_DB: ${POSTGRES_DB}
+#      POSTGRES_USER: ${POSTGRES_USER}
+#      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+#      INFLUXDB_V2_TOKEN: ${INFLUXDB_TOKEN}
+#      INFLUXDB_V2_ORG: ${INFLUXDB_ORG}
+#      INFLUXDB_V2_URL: 'http://influxdb:8086'
+#      INFLUXDB_V2_TIMEOUT: 60000
+#      INFLUXDB_BUCKET: ${INFLUXDB_BUCKET}
+#      INFLUXDB_PORT: ${INFLUXDB_PORT}
+#      CONSUMER_KEY_TWITTER_BOT: ${CONSUMER_KEY_TWITTER_BOT}
+#      CONSUMER_SECRET_TWITTER_BOT: ${CONSUMER_SECRET_TWITTER_BOT}
+#      ACCESS_TOKEN_TWITTER_BOT: ${ACCESS_TOKEN_TWITTER_BOT}
+#      ACCESS_TOKEN_SECRET_TWITTER_BOT: ${ACCESS_TOKEN_SECRET_TWITTER_BOT}
+#      SENTRY_DSN: 'https://87d01729e9be480c8d9b80a8a4d57f58@apm.ambalytics.com/12'
+#      SENTRY_TRACES_SAMPLE_RATE: 1.0
+#    networks:
+#      - backend
 
 
   api:
@@ -161,10 +161,10 @@ services:
     restart: unless-stopped
     ports:
       - "${API_PORT}"
-    depends_on:
-      - kafka
-      - postgres
-      - influxdb
+#    depends_on:
+#      - kafka
+#      - postgres
+#      - influxdb
     environment:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_USER: ${POSTGRES_USER}
@@ -174,54 +174,54 @@ services:
       KAFKA_BOOTRSTRAP_SERVER: ${KAFKA_BOOTRSTRAP_SERVER}
       INFLUXDB_V2_TOKEN: ${INFLUXDB_TOKEN}
       INFLUXDB_V2_ORG: ${INFLUXDB_ORG}
-      INFLUXDB_V2_URL: 'http://influxdb:8086'
+      INFLUXDB_V2_URL: 'http://110.hosts.ambalytics.com:8086'
       INFLUXDB_BUCKET: ${INFLUXDB_BUCKET}
       INFLUXDB_PORT: ${INFLUXDB_PORT}
-      SENTRY_DSN: 'https://8f472f79cae545f9994a56a0e0bebf1c@apm.ambalytics.com/11'
-      SENTRY_TRACES_SAMPLE_RATE: 1.0
+#      SENTRY_DSN: 'https://8f472f79cae545f9994a56a0e0bebf1c@apm.ambalytics.com/11'
+#      SENTRY_TRACES_SAMPLE_RATE: 1.0
     networks:
       - backend
 
 
-  postgres:
-    image: postgres
-    restart: unless-stopped
-    container_name: postgres
-    environment:
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_DB: ${POSTGRES_DB}
-    ports:
-      - "${POSTGRES_PORT}:${POSTGRES_PORT}"
-    networks:
-      - backend
-    volumes:
-      - ./db:/docker-entrypoint-initdb.d/
-
-  adminer:
-    image: adminer
-    container_name: adminer
-    restart: unless-stopped
-    ports:
-      - "${ADMINER_PORT}"
-    networks:
-      - backend
-
-  influxdb:
-    image: influxdb:2.0.9
-    container_name: influxdb
-    restart: unless-stopped
-    ports:
-      - "${INFLUXDB_PORT}:${INFLUXDB_PORT}"
-    environment:
-      DOCKER_INFLUXDB_INIT_MODE: "setup"
-      DOCKER_INFLUXDB_INIT_USERNAME: ${INFLUXDB_USER}
-      DOCKER_INFLUXDB_INIT_PASSWORD: ${INFLUXDB_PASSWORD}
-      DOCKER_INFLUXDB_INIT_ORG: ${INFLUXDB_ORG}
-      DOCKER_INFLUXDB_INIT_BUCKET: ${INFLUXDB_BUCKET}
-      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: ${INFLUXDB_TOKEN}
-    networks:
-      - backend
+#  postgres:
+#    image: postgres
+#    restart: unless-stopped
+#    container_name: postgres
+#    environment:
+#      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+#      POSTGRES_USER: ${POSTGRES_USER}
+#      POSTGRES_DB: ${POSTGRES_DB}
+#    ports:
+#      - "${POSTGRES_PORT}:${POSTGRES_PORT}"
+#    networks:
+#      - backend
+#    volumes:
+#      - ./db:/docker-entrypoint-initdb.d/
+#
+#  adminer:
+#    image: adminer
+#    container_name: adminer
+#    restart: unless-stopped
+#    ports:
+#      - "${ADMINER_PORT}"
+#    networks:
+#      - backend
+#
+#  influxdb:
+#    image: influxdb:2.0.9
+#    container_name: influxdb
+#    restart: unless-stopped
+#    ports:
+#      - "${INFLUXDB_PORT}:${INFLUXDB_PORT}"
+#    environment:
+#      DOCKER_INFLUXDB_INIT_MODE: "setup"
+#      DOCKER_INFLUXDB_INIT_USERNAME: ${INFLUXDB_USER}
+#      DOCKER_INFLUXDB_INIT_PASSWORD: ${INFLUXDB_PASSWORD}
+#      DOCKER_INFLUXDB_INIT_ORG: ${INFLUXDB_ORG}
+#      DOCKER_INFLUXDB_INIT_BUCKET: ${INFLUXDB_BUCKET}
+#      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: ${INFLUXDB_TOKEN}
+#    networks:
+#      - backend
 
 networks:
   backend:
