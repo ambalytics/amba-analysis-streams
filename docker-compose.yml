@@ -227,10 +227,5 @@ services:
 networks:
   ambaanalysisnet:
 
-# todo kafka topics
-# https://docs.docker.com/compose/compose-file/compose-file-v3/#healthcheck
-# for better waiting
-# processed <-> aggregated need same amount of partitions for faust to work
-#
 # topicname:partition:replica
 # "events_unlinked:1:1, events_unlinked-discussed:3:1, events_unlinked-crossref:3:1, events_linked:1:1, events_linked-discussed:3:1, events_unknown:3:1, events_processed:1:1, events_processed-discussed:3:1, events_aggregated:1:1"
